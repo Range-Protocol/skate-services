@@ -7,8 +7,11 @@ import (
 
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	sdkTypes "github.com/Layr-Labs/eigensdk-go/types"
-	crypto "skatechain.org/lib/crypto"
+	bls "skatechain.org/lib/crypto/bls"
 )
+
+// TODO: validation logic for executors solvency and transaction validity
+// NOTE: on futures version (v0.2: Skate Swap Flow)
 
 type OperatorID = sdkTypes.OperatorId
 
@@ -49,8 +52,8 @@ type OperatorState struct {
 // this information does not depend on the quorum.
 type IndexedOperatorInfo struct {
 	// PubKeyG1 and PubKeyG2 are the public keys of the operator, which are retrieved from the EigenDAPubKeyCompendium smart contract
-	PubkeyG1 *crypto.G1Point
-	PubkeyG2 *crypto.G2Point
+	PubkeyG1 *bls.G1Point
+	PubkeyG2 *bls.G2Point
 	// Socket is the socket address of the operator, in the form "host:port"
 	Socket string
 }
@@ -62,7 +65,7 @@ type IndexedOperatorState struct {
 	// IndexedOperators is a map from operator ID to the IndexedOperatorInfo for that operator.
 	IndexedOperators map[OperatorID]*IndexedOperatorInfo
 	// AggKeys is a map from quorum ID to the aggregate public key of the operators in that quorum
-	AggKeys map[QuorumID]*crypto.G1Point
+	AggKeys map[QuorumID]*bls.G1Point
 }
 
 type Transactor interface {
@@ -74,7 +77,7 @@ type Transactor interface {
 	// will be returned.
 	RegisterOperator(
 		ctx context.Context,
-		keypair *crypto.KeyPair,
+		keypair *bls.KeyPair,
 		socket string,
 		quorumIds []QuorumID,
 		operatorEcdsaPrivateKey *ecdsa.PrivateKey,
@@ -87,7 +90,7 @@ type Transactor interface {
 	// with the current block number.
 	// If the operator isn't registered with any of the specified quorums, this function will return error, and
 	// no quorum will be deregistered.
-	DeregisterOperator(ctx context.Context, pubkeyG1 *crypto.G1Point, blockNumber uint32, quorumIds []QuorumID) error
+	DeregisterOperator(ctx context.Context, pubkeyG1 *bls.G1Point, blockNumber uint32, quorumIds []QuorumID) error
 
 	// UpdateOperatorSocket updates the socket of the operator in all the quorums that it is registered with.
 	UpdateOperatorSocket(ctx context.Context, socket string) error

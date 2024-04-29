@@ -1,4 +1,3 @@
-// Functions to sign and verify Ethereum RSV style signatures.
 package crypto
 
 import (
@@ -11,6 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 )
+
+// NOTE: ethereum standard signature, built-in with solidity `sign`, `verify`
 
 // privKeyLen is the length of a secp256k1 private key.
 const privKeyLen = 32
@@ -41,10 +42,7 @@ func Sign(key crypto.PrivKey, input [32]byte) ([65]byte, error) {
 	return [65]byte(append(sig[1:], sig[0])), nil
 }
 
-// Verify returns whether the 65 byte signature is valid for the provided hash
-// and Ethereum address.
-//
-// Note the signature MUST be 65 bytes in the Ethereum [R || S || V] format.
+// Note the signature MUST be 65 bytes in the Ethereum [R || S || V] format. Ethereum V={27, 28}
 func Verify(address common.Address, hash [32]byte, sig [65]byte) (bool, error) {
 	// Adjust V from Ethereum 27/28 to secp256k1 0/1
 	const vIdx = 64

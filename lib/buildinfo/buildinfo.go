@@ -2,7 +2,6 @@ package buildinfo
 
 import (
 	"context"
-	"log"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -61,7 +60,6 @@ func getBuildInfo() (goversion, hash string, timestamp string) {
 	if !ok {
 		return goversion, hash, timestamp
 	}
-	log.Print(info.Settings)
   goversion = info.GoVersion
 
 	for _, s := range info.Settings {

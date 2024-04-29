@@ -12,7 +12,7 @@ import (
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	lru "github.com/hashicorp/golang-lru/v2"
-	crypto "skatechain.org/lib/crypto"
+	bls "skatechain.org/lib/crypto/bls"
 	math "skatechain.org/lib/math"
 )
 
@@ -25,7 +25,7 @@ var (
 )
 
 type SignerMessage struct {
-	Signature *crypto.Signature
+	Signature *bls.Signature
 	Operator  OperatorID
 	Err       error
 }
@@ -33,17 +33,17 @@ type SignerMessage struct {
 // SignatureAggregation contains the results of aggregating signatures from a set of operators
 type SignatureAggregation struct {
 	// NonSigners contains the public keys of the operators that did not sign the message
-	NonSigners []*crypto.G1Point
+	NonSigners []*bls.G1Point
 	// QuorumAggPubKeys contains the aggregated public keys for all of the operators each quorum,
 	// Including those that did not sign
-	QuorumAggPubKeys []*crypto.G1Point
+	QuorumAggPubKeys []*bls.G1Point
 	// AggPubKey is the aggregated public key for all of the operators that signed the message,
 	// further aggregated across the quorums; operators signing for multiple quorums will be included in
 	// the aggregation multiple times
-	AggPubKey *crypto.G2Point
+	AggPubKey *bls.G2Point
 	// AggSignature is the aggregated signature for all of the operators that signed the message, mirroring the
 	// AggPubKey.
-	AggSignature *crypto.Signature
+	AggSignature *bls.Signature
 	// QuorumResults contains the quorum ID and the amount signed for each quorum
 	QuorumResults map[QuorumID]*QuorumResult
 	// SignerMap contains the operator IDs that signed the message
@@ -96,8 +96,8 @@ func (a *StdSignatureAggregator) AggregateSignatures(ctx context.Context, state 
 	for ind := range quorumIDs {
 		stakeSigned[ind] = big.NewInt(0)
 	}
-	aggSigs := make([]*crypto.Signature, len(quorumIDs))
-	aggPubKeys := make([]*crypto.G2Point, len(quorumIDs))
+	aggSigs := make([]*bls.Signature, len(quorumIDs))
+	aggPubKeys := make([]*bls.G2Point, len(quorumIDs))
 
 	signerMap := make(map[OperatorID]bool)
 
@@ -162,7 +162,7 @@ func (a *StdSignatureAggregator) AggregateSignatures(ctx context.Context, state 
 
 			// Add to agg signature
 			if aggSigs[idx] == nil {
-				aggSigs[idx] = &crypto.Signature{G1Point: sig.Clone()}
+				aggSigs[idx] = &bls.Signature{G1Point: sig.Clone()}
 				aggPubKeys[idx] = op.PubkeyG2.Clone()
 			} else {
 				aggSigs[idx].Add(sig.G1Point)
@@ -173,7 +173,7 @@ func (a *StdSignatureAggregator) AggregateSignatures(ctx context.Context, state 
 	}
 
 	// Aggregate Non signer Pubkey Id
-	nonSignerKeys := make([]*crypto.G1Point, 0)
+	nonSignerKeys := make([]*bls.G1Point, 0)
 	nonSignerOperatorIds := make([]OperatorID, 0)
 
 	for id, op := range state.IndexedOperators {
@@ -184,7 +184,7 @@ func (a *StdSignatureAggregator) AggregateSignatures(ctx context.Context, state 
 		}
 	}
 
-	quorumAggPubKeys := make([]*crypto.G1Point, len(quorumIDs))
+	quorumAggPubKeys := make([]*bls.G1Point, len(quorumIDs))
 
 	// Validate the amount signed and aggregate signatures for each quorum
 	quorumResults := make(map[QuorumID]*QuorumResult)

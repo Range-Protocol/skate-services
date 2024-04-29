@@ -41,10 +41,6 @@ docker-build-and-publish-images: ## builds and publishes operator and aggregator
 	KO_DOCKER_REPO=ghcr.io/layr-labs/incredible-squaring ko build aggregator/cmd/main.go --preserve-import-paths
 	KO_DOCKER_REPO=ghcr.io/layr-labs/incredible-squaring ko build operator/cmd/main.go --preserve-import-paths
 
-docker-start-everything: docker-build-and-publish-images ## starts aggregator and operator docker containers
-	docker compose pull && docker compose up
-
-
 # TODO: WIP
 __CLI__: ## 
 cli-setup-operator: send-fund cli-register-operator-with-eigenlayer cli-register-operator-with-avs ## registers operator with eigenlayer and avs
@@ -75,21 +71,15 @@ ____OFFCHAIN_SOFTWARE___: ##
 start-aggregator: ## 
 	go run aggregator/cmd/main.go --config config-files/aggregator.yaml \
 		--skate-deployment ${DEPLOYMENT_FILES_DIR}/skate_avs_deployment_output.json \
-		--ecdsa-private-key ${AGGREGATOR_ECDSA_PRIV_KEY} \
-		2>&1 | zap-pretty
+		--ecdsa-private-key ${AGGREGATOR_ECDSA_PRIV_KEY}
 
 start-operator: ## 
-	go run operator/cmd/main.go --config config-files/operator.anvil.yaml \
-		2>&1 | zap-pretty
+	go run operator/cmd/main.go --config config-files/operator.anvil.yaml
 
 start-challenger: ## 
 	go run challenger/cmd/main.go --config config-files/challenger.yaml \
-		--credible-squaring-deployment ${DEPLOYMENT_FILES_DIR}/credible_squaring_avs_deployment_output.json \
-		--ecdsa-private-key ${CHALLENGER_ECDSA_PRIV_KEY} \
-		2>&1 | zap-pretty
-
-run-plugin: ## 
-	go run plugin/cmd/main.go --config config-files/operator.anvil.yaml
+		--skate-deployment ${DEPLOYMENT_FILES_DIR}/credible_squaring_avs_deployment_output.json \
+		--ecdsa-private-key ${CHALLENGER_ECDSA_PRIV_KEY}
 
 -----------------------------: ## 
 _____HELPER_____: ## 
