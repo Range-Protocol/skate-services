@@ -32,7 +32,7 @@ var (
 // BindingSkateGatewayMetaData contains all meta data concerning the BindingSkateGateway contract.
 var BindingSkateGatewayMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212206e0c8dacaeaf89ace7a0bd8bd052e3d46ff500b1cb64cd59578deb9272f16b8964736f6c634300080c0033",
+	Bin: "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220764739d0cb7e4d83e3a390d098b01c5467754235867ecea0e3abb557eb52593b64736f6c63430008140033",
 }
 
 // BindingSkateGatewayABI is the input ABI used to generate the binding from.

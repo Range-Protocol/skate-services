@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	avsdirectory "skatechain.org/contracts/bindings/AVSDirectory"
+	avsdirectory "skatechain.org/contracts/bindings/IAVSDirectory"
 	"skatechain.org/lib/logging"
 	"skatechain.org/lib/metrics"
 	"skatechain.org/lib/on-chain/backend"
@@ -74,7 +74,7 @@ func RegisterOperatorWithAVS(
 ) (*gethtypes.Receipt, error) {
 	opAddr := crypto.PubkeyToAddress(opPrivkey.PublicKey)
 
-	avsDir, err := avsdirectory.NewBindingAVSDirectoryCaller(avsDirectoryAddr, backend)
+	avsDir, err := avsdirectory.NewBindingIAVSDirectory(avsDirectoryAddr, backend)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,8 @@ func RegisterOperatorWithAVS(
 
 	opSig, err := crypto.Sign(digestHash[:], opPrivkey)
 	opSig[64] += 27 // INFO: convert v of [r,s,v] into EVM format, originally ecdsa v={0,1}.
-	// TODO:call `RegisterOperator` function from AVS.
+	// TODO: check for staking amounts then call `RegisterOperator` function from AVS.
+
 	return nil, nil
 }
 

@@ -25,8 +25,8 @@ forge build
 
 # NOTE: change to our contracts here
 avs_service_contracts="
-  SkateAVS SkateTaskManager SkateApp SkateGateway AVSDirectory BitmapUtils
-  OperatorStateRetriever RegistryCoordinator BLSApkRegistry BN254 ISignatureUtils
+  ISkateAVS IAVSDirectory IDelegationManager ISignatureUtils IStrategy
+  SkateApp SkateGateway
   IERC20
 "
 for contract in $avs_service_contracts; do
