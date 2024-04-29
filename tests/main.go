@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 
-	"skatechain.org/contracts/bindings/IERC20"
+	"skatechain.org/contract/bindings/IERC20"
 	"skatechain.org/lib/monitor"
 	"skatechain.org/lib/on-chain/backend"
 	"skatechain.org/lib/on-chain/network"
