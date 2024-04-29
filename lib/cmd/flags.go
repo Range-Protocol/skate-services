@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"net/url"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -16,22 +15,15 @@ func BindHomeFlag(flags *pflag.FlagSet, homeDir *string) {
 	flags.StringVar(homeDir, homeFlag, *homeDir, "The application home directory containing config and data")
 }
 
-// redact returns a redacted version of the given flag value. It currently supports redacting
-// passwords in valid URLs as well as flags that contains words like "token", "password", "secret", "db" or "key".
-func redact(flag, val string) string {
+func Redact(flag string) string {
 	if strings.Contains(flag, "token") ||
 		strings.Contains(flag, "password") ||
 		strings.Contains(flag, "secret") ||
 		strings.Contains(flag, "db") ||
 		strings.Contains(flag, "header") ||
 		strings.Contains(flag, "key") {
-		return "xxxxx"
+		return "█████"
 	}
 
-	u, err := url.Parse(val)
-	if err != nil {
-		return val
-	}
-
-	return u.Redacted()
+	return flag
 }

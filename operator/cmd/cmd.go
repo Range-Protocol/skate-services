@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"skate.org/avs/lib/buildinfo"
-	libcmd "skate.org/avs/lib/cmd"
+	"skatechain.org/lib/buildinfo"
+	libcmd "skatechain.org/lib/cmd"
 )
 
 // New returns a new root cobra command that handles our command line tool.

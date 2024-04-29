@@ -12,10 +12,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	avsdirectory "skate.org/avs/contracts/bindings/AVSDirectory"
-	"skate.org/avs/lib/logging"
-	"skate.org/avs/lib/metrics"
-	"skate.org/avs/lib/on-chain/backend"
+	avsdirectory "skatechain.org/contracts/bindings/AVSDirectory"
+	"skatechain.org/lib/logging"
+	"skatechain.org/lib/metrics"
+	"skatechain.org/lib/on-chain/backend"
 )
 
 const (

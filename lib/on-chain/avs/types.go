@@ -7,7 +7,7 @@ import (
 
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	sdkTypes "github.com/Layr-Labs/eigensdk-go/types"
-	crypto "skate.org/avs/lib/crypto"
+	crypto "skatechain.org/lib/crypto"
 )
 
 type OperatorID = sdkTypes.OperatorId

@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"skate.org/avs/lib/logging"
-	"skate.org/avs/lib/tutil"
+	"skatechain.org/lib/logging"
+	"skatechain.org/lib/tutil"
 )
 
 //go:generate go test . -golden -clean

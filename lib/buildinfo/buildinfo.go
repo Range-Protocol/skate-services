@@ -2,6 +2,7 @@ package buildinfo
 
 import (
 	"context"
+	"log"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -13,15 +14,13 @@ import (
 // This value is set by goreleaser at build-time and should be the git tag for official releases.
 var version = "v0.1.0"
 
-// Version returns the version of the whole omni-monorepo and all binaries built from this git commit.
 func Version() string {
 	return version
 }
 
 // Instrument logs the version, git commit hash, and timestamp from the runtime build info.
-// It also sets metrics.
 func Instrument(ctx context.Context) {
-	commit, timestamp := get()
+	_, commit, timestamp := getBuildInfo()
 
 	versionGauge.WithLabelValues(version).Set(1)
 	commitGauge.WithLabelValues(commit).Set(1)
@@ -36,14 +35,16 @@ func BuildInfoCmd() *cobra.Command {
 		Short: "Print the version information of this binary",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			commit, timestamp := get()
+			goversion, commit, timestamp := getBuildInfo()
 
 			var sb strings.Builder
-			_, _ = sb.WriteString("Version       " + version)
+			_, _ = sb.WriteString("Package version: " + version)
 			_, _ = sb.WriteString("\n")
-			_, _ = sb.WriteString("Git Commit    " + commit)
+			_, _ = sb.WriteString("Go version:      " + goversion)
 			_, _ = sb.WriteString("\n")
-			_, _ = sb.WriteString("Git Timestamp " + timestamp)
+			_, _ = sb.WriteString("Git Commit:      " + commit)
+			_, _ = sb.WriteString("\n")
+			_, _ = sb.WriteString("Git Timestamp:   " + timestamp)
 			_, _ = sb.WriteString("\n")
 
 			cmd.Printf(sb.String())
@@ -51,15 +52,17 @@ func BuildInfoCmd() *cobra.Command {
 	}
 }
 
-// get returns the git commit hash and timestamp from the runtime build info.
-func get() (hash string, timestamp string) { //nolint:nonamedreturns // Disambiguate identical return types.
-	hash, timestamp = "unknown", "unknown"
+// getBuildInfo returns the git commit hash and timestamp from the runtime build info.
+func getBuildInfo() (goversion, hash string, timestamp string) {
+	goversion, hash, timestamp = "█████", "█████", "█████"
 	hashLen := 7
 
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return hash, timestamp
+		return goversion, hash, timestamp
 	}
+	log.Print(info.Settings)
+  goversion = info.GoVersion
 
 	for _, s := range info.Settings {
 		if s.Key == "vcs.revision" {
@@ -72,5 +75,5 @@ func get() (hash string, timestamp string) { //nolint:nonamedreturns // Disambig
 		}
 	}
 
-	return hash, timestamp
+	return goversion, hash, timestamp
 }

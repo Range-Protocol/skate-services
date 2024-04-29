@@ -12,8 +12,8 @@ import (
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	lru "github.com/hashicorp/golang-lru/v2"
-	crypto "skate.org/avs/lib/crypto"
-	math "skate.org/avs/lib/math"
+	crypto "skatechain.org/lib/crypto"
+	math "skatechain.org/lib/math"
 )
 
 const maxNumOperatorAddresses = 300

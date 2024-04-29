@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"skate.org/avs/lib/logging"
+	"skatechain.org/lib/logging"
 
 	geth "github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"

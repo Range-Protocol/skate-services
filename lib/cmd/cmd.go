@@ -12,7 +12,7 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
-	"skate.org/avs/lib/logging"
+	"skatechain.org/lib/logging"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
