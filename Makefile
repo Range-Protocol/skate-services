@@ -15,24 +15,24 @@ CHALLENGER_ECDSA_PRIV_KEY=0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9
 CHAINID=31337
 
 # Make sure to update this if the strategy address changes
-# check in contracts/script/output/${CHAINID}/credible_squaring_avs_deployment_output.json
+# check in contract/script/output/${CHAINID}/credible_squaring_avs_deployment_output.json
 STRATEGY_ADDRESS=0x7a2088a1bFc9d81c55368AE168C2C02570cB814F # 1-address
-DEPLOYMENT_FILES_DIR=contracts/script/output/${CHAINID}
+DEPLOYMENT_FILES_DIR=contract/script/output/${CHAINID}
 
 -----------------------------: ## 
 
 ___CONTRACTS___: ## 
 
-build-contracts: ## builds all contracts
-	cd contracts && forge build
+build-contract: ## builds all contracts
+	cd contract && forge build
 
 bindings: ## generates contract bindings
-	cd contracts && ./go-bindings.sh
+	cd contract && ./go-bindings.sh
 
-deploy-eigenlayer-contracts-to-anvil-and-save-state: ## Deploy eigenlayer
+deploy-eigenlayer-contract-to-anvil-and-save-state: ## Deploy eigenlayer
 	./tests/anvil/deploy-eigenlayer-save-anvil-state.sh
 
-start-anvil-chain-with-el-and-avs-deployed: ## starts anvil from a saved state file (with el and avs contracts deployed)
+start-anvil-chain-with-el-and-avs-deployed: ## starts anvil from a saved state file (with el and avs contract deployed)
 	./tests/anvil/start-anvil-chain-with-el-and-avs-deployed.sh
 
 # TODO: WIP
@@ -102,7 +102,7 @@ tests-unit: ## runs all unit tests
 	go tool cover -html=coverage.out -o coverage.html
 
 tests-contract: ## runs all forge tests
-	cd contracts && forge test
+	cd contract && forge test
 
 tests-integration: ## runs all integration tests
 	go test ./tests/integration/... -v -count=1
