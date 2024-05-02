@@ -2,15 +2,14 @@ package ecdsa_test
 
 import (
 	"crypto/rand"
-  // "crypto/elliptic"
 	"testing"
 
-	"skatechain.org/lib/crypto/ecdsa" // replace with your import path
+	"skatechain.org/lib/crypto/ecdsa"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestECDSA(t *testing.T) {
-	// Generate a random private key
+	// Generate a random private key on K256 curve
 	privateKey, err := ecdsa.KeyGen(ecdsa.S256(), rand.Reader)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)

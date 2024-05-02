@@ -5,20 +5,6 @@ help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
-# 0-address
-AGGREGATOR_ECDSA_PRIV_KEY=0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
-
-# 2-address
-CHALLENGER_ECDSA_PRIV_KEY=0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
-
-# anvil default chain Id
-CHAINID=31337
-
-# Make sure to update this if the strategy address changes
-# check in contracts/script/output/${CHAINID}/credible_squaring_avs_deployment_output.json
-STRATEGY_ADDRESS=0x7a2088a1bFc9d81c55368AE168C2C02570cB814F # 1-address
-DEPLOYMENT_FILES_DIR=contracts/script/output/${CHAINID}
-
 -----------------------------: ## 
 
 ___CONTRACTS___: ## 
@@ -27,45 +13,23 @@ build-contracts: ## builds all contracts
 	cd contracts && forge build
 
 bindings: ## generates contracts bindings
-	cd contracts && ./go-bindings.sh
+	cd contracts && ./gen_bindings.sh
 
-deploy-eigenlayer-contracts-to-anvil-and-save-state: ## Deploy eigenlayer
-	./tests/anvil/deploy-eigenlayer-save-anvil-state.sh
+______API______:
 
-start-anvil-chain-with-el-and-avs-deployed: ## starts anvil from a saved state file (with el and avs contracts deployed)
-	./tests/anvil/start-anvil-chain-with-el-and-avs-deployed.sh
+gen-api-pb: ## generate api pbs
+	cd api && ./gen_pb.sh
 
+
+-----------------------------: ## 
 # TODO: WIP
 ___DOCKER___: ## 
 docker-build-and-publish-images: ## builds and publishes operator and aggregator docker images using Ko
 	KO_DOCKER_REPO=ghcr.io/layr-labs/incredible-squaring ko build aggregator/cmd/main.go --preserve-import-paths
 	KO_DOCKER_REPO=ghcr.io/layr-labs/incredible-squaring ko build operator/cmd/main.go --preserve-import-paths
 
-# TODO: WIP
-__CLI__: ## 
-cli-setup-operator: send-fund cli-register-operator-with-eigenlayer cli-register-operator-with-avs ## registers operator with eigenlayer and avs
-
-cli-register-operator-with-eigenlayer: ## registers operator with delegationManager
-	go run cli/main.go --config config-files/operator.anvil.yaml register-operator-with-eigenlayer
-
-cli-deposit-into-mocktoken-strategy: ## 
-	./scripts/deposit-into-mocktoken-strategy.sh
-
-cli-register-operator-with-avs: ## 
-	go run cli/main.go --config config-files/operator.anvil.yaml register-operator-with-avs
-
-cli-deregister-operator-with-avs: ## 
-	go run cli/main.go --config config-files/operator.anvil.yaml deregister-operator-with-avs
-
-cli-print-operator-status: ## 
-	go run cli/main.go --config config-files/operator.anvil.yaml print-operator-status
-
-send-fund: ## sends fund to the operator saved in tests/keys/test.ecdsa.key.json
-	cast send 0x860B6912C2d0337ef05bbC89b0C2CB6CbAEAB4A5 --value 10ether --private-key 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
 
 -----------------------------: ## 
-# We pipe all zapper logs through https://github.com/maoueh/zap-pretty so make sure to install it
-
 # TODO: WIP
 ____OFFCHAIN_SOFTWARE___: ## 
 start-aggregator: ## 
@@ -76,10 +40,6 @@ start-aggregator: ##
 start-operator: ## 
 	go run operator/cmd/main.go --config config-files/operator.anvil.yaml
 
-start-challenger: ## 
-	go run challenger/cmd/main.go --config config-files/challenger.yaml \
-		--skate-deployment ${DEPLOYMENT_FILES_DIR}/credible_squaring_avs_deployment_output.json \
-		--ecdsa-private-key ${CHALLENGER_ECDSA_PRIV_KEY}
 
 -----------------------------: ## 
 _____HELPER_____: ## 

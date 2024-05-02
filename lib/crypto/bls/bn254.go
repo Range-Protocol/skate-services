@@ -132,7 +132,9 @@ func (s *Signature) Verify(pubkey *G2Point, message [32]byte) bool {
 
 // GetOperatorID hashes the G1Point (public key of an operator) to generate the operator ID.
 // It does it to match how it's hashed in solidity: `keccak256(abi.encodePacked(pk.X, pk.Y))`
-// Ref: https://github.com/Layr-Labs/eigenlayer-contracts/blob/avs-unstable/src/contracts/libraries/BN254.sol#L285
+//
+// Ref: https://github.com/Layr-Labs/eigenlayer-middleware/tree/deebd4bafb14fffea54e15c7ba0b3cb95945e7db/src/BLSApkRegistry.sol#L100
+// and  https://github.com/Layr-Labs/eigenlayer-middleware/tree/deebd4bafb14fffea54e15c7ba0b3cb95945e7db/src/libraries/BN254.sol#L273
 func (p *G1Point) GetOperatorID() [32]byte {
 	x := p.X.BigInt(new(big.Int))
 	y := p.Y.BigInt(new(big.Int))

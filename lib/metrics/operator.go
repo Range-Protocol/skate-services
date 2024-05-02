@@ -4,7 +4,7 @@ import (
 	elMetrics "github.com/Layr-Labs/eigensdk-go/metrics"
 )
 
-type Metrics struct {
+type Metrics interface {
 	elMetrics.Metrics
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
@@ -26,4 +27,9 @@ func Redact(flag string) string {
 	}
 
 	return flag
+}
+
+// custom AVS addr, else default
+func BindVerbose(cmd *cobra.Command, verbose *bool) {
+	cmd.Flags().BoolVar(verbose, "verbose", *verbose, "Run with verbose logs")
 }

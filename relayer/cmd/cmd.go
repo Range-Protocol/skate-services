@@ -9,8 +9,9 @@ import (
 // New returns a new root cobra command that handles our command line tool.
 func New() *cobra.Command {
 	return libcmd.NewRootCmd(
-		"operator",
-		"CLI for Skate Operator",
+		"relayer",
+		"CLI for Skate Relayer",
+    retrieveCmd(),
 		buildinfo.BuildInfoCmd(),
 	)
 }

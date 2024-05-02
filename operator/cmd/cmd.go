@@ -12,6 +12,7 @@ func New() *cobra.Command {
 		"operator",
 		"CLI for Skate Operator",
 		registerCmd(),
+    monitorSkateAppCmd(),
 		buildinfo.BuildInfoCmd(),
 	)
 }

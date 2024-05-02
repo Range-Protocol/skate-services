@@ -5,18 +5,15 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"os"
 	"time"
 
 	"github.com/pkg/errors"
 	"skatechain.org/lib/logging"
 
-	geth "github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 
 	elCliTypes "github.com/Layr-Labs/eigenlayer-cli/pkg/types"
-	elCliUtils "github.com/Layr-Labs/eigenlayer-cli/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -33,53 +30,6 @@ type RegisterConfig struct {
 func Register(ctx context.Context, cfg RegisterConfig) error {
 	// Default dependencies.
 	return nil
-}
-
-// readConfig returns the eigen-layer operator configuration from the given file.
-func readConfig(file string) (elCliTypes.OperatorConfigNew, error) {
-	if _, err := os.Stat(file); os.IsNotExist(err) {
-		return elCliTypes.OperatorConfigNew{}, errors.Wrap(err, fmt.Sprintf("eigen config file not found: %s", file))
-	}
-
-	file_bytes, err := os.ReadFile(file)
-	if err != nil {
-		return elCliTypes.OperatorConfigNew{}, errors.Wrap(err, fmt.Sprintf("read eigen config file: %s", file))
-	}
-
-	var config elCliTypes.OperatorConfigNew
-	if err := yaml.Unmarshal(file_bytes, &config); err != nil {
-		return elCliTypes.OperatorConfigNew{}, errors.Wrap(err, "unmarshal eigen config file")
-	}
-
-	return config, nil
-}
-
-func avsAddressOrDefault(avsAddr string, chainID *big.Int) (geth.Address, error) {
-	var resp geth.Address
-	if avsAddr != "" {
-		if !geth.IsHexAddress(avsAddr) {
-			return geth.Address{}, errors.New(fmt.Sprintf("invalid avs address: %s", avsAddr))
-		}
-		resp = geth.HexToAddress(avsAddr)
-	} else if addr, ok := skateAvsAddressOnChain(chainID); ok {
-		resp = addr
-	} else {
-		return geth.Address{}, errors.New(fmt.Sprintf("avs address not provided and no default for chain found: %d", chainID.Uint64()))
-	}
-
-	return resp, nil
-}
-
-// TODO: replace with our AVS address
-func skateAvsAddressOnChain(chainID *big.Int) (geth.Address, bool) {
-	switch chainID.Int64() {
-	case elCliUtils.HoleskyChainId:
-		return geth.HexToAddress(""), true
-	case elCliUtils.MainnetChainId:
-		return geth.HexToAddress(""), true
-	default:
-		return geth.Address{}, false
-	}
 }
 
 func registerCmd() *cobra.Command {
@@ -108,3 +58,32 @@ func registerCmd() *cobra.Command {
 
 	return cmd
 }
+
+func bindRegisterConfig(cobraCmd *cobra.Command, cfg *RegisterConfig) {
+	bindAVSAddress(cobraCmd, &cfg.AVSAddr)
+
+	const flagConfig = "config-file"
+	cobraCmd.Flags().StringVar(&cfg.ConfigFile, flagConfig, cfg.ConfigFile, "Path to the Eigen-Layer yaml configuration file")
+	_ = cobraCmd.MarkFlagRequired(flagConfig)
+}
+
+
+// readConfig returns the eigen-layer operator configuration from the given file.
+func readConfig(file string) (elCliTypes.OperatorConfigNew, error) {
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return elCliTypes.OperatorConfigNew{}, errors.Wrap(err, fmt.Sprintf("eigen config file not found: %s", file))
+	}
+
+	file_bytes, err := os.ReadFile(file)
+	if err != nil {
+		return elCliTypes.OperatorConfigNew{}, errors.Wrap(err, fmt.Sprintf("read eigen config file: %s", file))
+	}
+
+	var config elCliTypes.OperatorConfigNew
+	if err := yaml.Unmarshal(file_bytes, &config); err != nil {
+		return elCliTypes.OperatorConfigNew{}, errors.Wrap(err, "unmarshal eigen config file")
+	}
+
+	return config, nil
+}
+

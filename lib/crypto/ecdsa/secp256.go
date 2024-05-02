@@ -49,7 +49,6 @@ func EcRecover(hash []byte, sig [65]byte) (common.Address, error) {
 
 // Verify ethereum signed message
 func Verify(address common.Address, hash []byte, sig [65]byte) (bool, error) {
-	println("Hash", hex.EncodeToString(hash), "Sig", hex.EncodeToString(sig[:]))
 	actual, err := EcRecover(hash, sig)
 
 	return actual == address, err
@@ -59,8 +58,8 @@ func PubkeyToAddress(publicKey ecdsa.PublicKey) common.Address {
   return ethcrypto.PubkeyToAddress(publicKey)
 }
 
-func Keccak256(message []byte) []byte {
-	return ethcrypto.Keccak256(message)
+func Keccak256(data ...[]byte) []byte {
+	return ethcrypto.Keccak256(data...)
 }
 
 func S256() elliptic.Curve {

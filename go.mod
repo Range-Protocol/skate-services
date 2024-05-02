@@ -6,12 +6,13 @@ require (
 	github.com/Layr-Labs/eigenda v0.6.1
 	github.com/Layr-Labs/eigenlayer-cli v0.7.2
 	github.com/Layr-Labs/eigensdk-go v0.1.6
-	github.com/btcsuite/btcd/btcec/v2 v2.3.3
-	github.com/cometbft/cometbft v0.38.6
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/consensys/gnark-crypto v0.12.1
+	github.com/coocood/freecache v1.2.4
 	github.com/ethereum/go-ethereum v1.14.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/joho/godotenv v1.5.1
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rs/zerolog v1.29.1
@@ -19,6 +20,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
+	google.golang.org/grpc v1.59.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -29,6 +32,7 @@ require (
 	github.com/VictoriaMetrics/fastcache v1.12.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
+	github.com/btcsuite/btcd/btcec/v2 v2.3.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
@@ -43,6 +47,7 @@ require (
 	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/hashicorp/go-bexpr v0.1.14 // indirect
@@ -56,7 +61,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
@@ -93,7 +97,7 @@ require (
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.20.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

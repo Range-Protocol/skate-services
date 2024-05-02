@@ -18,6 +18,10 @@ import (
 
 const maxNumOperatorAddresses = 300
 
+// NOTE: BLS signature aggregation, we are using list of ecdsa off-chain instead
+// NOTE: consider for futures version (v0.2: Skate Swap Flow)
+
+
 var (
 	ErrPubKeysNotEqual     = errors.New("public keys are not equal")
 	ErrInsufficientEthSigs = errors.New("insufficient eth signatures")
