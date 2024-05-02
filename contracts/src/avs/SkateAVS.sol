@@ -247,6 +247,9 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
             sigsVerified++;
 
             // 2/3 of operators must submit the data.
+            // NOTE: future considerations
+            // 1. Weighted by operator stake amount.
+            // 2. to ensure strict BFT, should check using `(2 + amount * 2) / 3 > totalAmount`
             if (sigsVerified * 10_000 >= _getOperators().length * 6666) {
                 quorumSuccessful = true;
                 break;

@@ -3,7 +3,6 @@ package ecdsa
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"encoding/hex"
 	"io"
 
 	"github.com/pkg/errors"
@@ -16,8 +15,9 @@ import (
 // Sign returns a signature from input data.
 //
 // Follow EVM standard: [R (32b) || S (32b) || V (1b)] and (V={27, 28}).
-func Sign(hash []byte, key *ecdsa.PrivateKey) ([65]byte, error) {
-	sig, err := ethcrypto.Sign(hash[:], key)
+// NOTE: digestHash must be 32 bytes
+func Sign(digestHash []byte, key *ecdsa.PrivateKey) ([65]byte, error) {
+	sig, err := ethcrypto.Sign(digestHash[:], key)
 	if err != nil {
 		return [65]byte(sig), err
 	}
@@ -28,18 +28,18 @@ func Sign(hash []byte, key *ecdsa.PrivateKey) ([65]byte, error) {
 
 // Recover the public key that sign a given hash
 //
-// WARNING: Not the ecrecover in solidity, i.e. hash IS NOT prefixed with "\x19Ethereum Signed Message\n32".
+// NOTE: Equivalent to Openzeppelin's ECDSA.recover function: 
+// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/ECDSA.sol
 //
-// NOTE: Equivalent to Openzeppelin's ECDSA.recover function: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/ECDSA.sol
-func EcRecover(hash []byte, sig [65]byte) (common.Address, error) {
-	println("Hash", hex.EncodeToString(hash), "Sig", hex.EncodeToString(sig[:]))
+// NOTE: digestHash must be 32 bytes
+func EcRecover(digestHash []byte, sig [65]byte) (common.Address, error) {
 	if v := sig[64]; v != 27 && v != 28 {
 		return common.Address{}, errors.New("invalid recovery id (V) format, must be 27 or 28")
 	}
 	// NOTE: COMPATIBILITY REQUIREMENTS: Adjust V from Ethereum 27/28 to secp256k1 0/1
 	sig[64] -= 27
 
-	pubkey, err := ethcrypto.SigToPub(hash[:], sig[:])
+	pubkey, err := ethcrypto.SigToPub(digestHash[:], sig[:])
 	if err != nil {
 		return common.Address{}, errors.Wrap(err, "Recover public key")
 	}
@@ -48,8 +48,9 @@ func EcRecover(hash []byte, sig [65]byte) (common.Address, error) {
 }
 
 // Verify ethereum signed message
-func Verify(address common.Address, hash []byte, sig [65]byte) (bool, error) {
-	actual, err := EcRecover(hash, sig)
+// NOTE: digestHash must be 32 bytes
+func Verify(address common.Address, digestHash []byte, sig [65]byte) (bool, error) {
+	actual, err := EcRecover(digestHash, sig)
 
 	return actual == address, err
 }

@@ -5,15 +5,18 @@ skate_wss_rpc: wss://nollie-rpc.skatechain.org/socket
 skate_app: 0x2968C1663B41Cc633540148c679f43136a4644Fc
 
 # HoleSky environments
-skate_avs: 
+skate_avs: 0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071
 
 # EVM RPC
-holesky_http_rpc: https://localhost:8545
-holesky_wss_rpc: wss://localhost:8545
+holesky_http_rpc: https://holesky.drpc.org
+holesky_wss_rpc: wss://holesky.drpc.org
+# Other chain RPCs
+# ARbitrum, mantle, ...
 
+# Strategies
+wsETH_strategy: 0x7D704507b76571a51d9caE8AdDAbBFd0ba0e63d3
 
-
-ecdsa_private_key_store_path: tests/keys/test.ecdsa.key.json
+keystore_path: keystore/
 
 # avs node spec compliance https://eigen.nethermind.io/docs/spec/intro
 eigen_metrics_ip_port_address: localhost:9090

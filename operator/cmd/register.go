@@ -60,8 +60,6 @@ func registerCmd() *cobra.Command {
 }
 
 func bindRegisterConfig(cobraCmd *cobra.Command, cfg *RegisterConfig) {
-	bindAVSAddress(cobraCmd, &cfg.AVSAddr)
-
 	const flagConfig = "config-file"
 	cobraCmd.Flags().StringVar(&cfg.ConfigFile, flagConfig, cfg.ConfigFile, "Path to the Eigen-Layer yaml configuration file")
 	_ = cobraCmd.MarkFlagRequired(flagConfig)

@@ -1,6 +1,8 @@
 package mem
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"math/big"
 
@@ -18,16 +20,49 @@ func NewCache(size int) *MemCache {
 }
 
 type Operator struct {
-	Address  string
-	Strategy string
-	Amount   string // base 10 value
+	Address string
+	// NOTE: for futures iterations
+	// Stakes []StakedAmount
 }
 
-func GenKey(op Operator) []byte {
-	return ecdsa.Keccak256([]byte(op.Address), []byte(op.Strategy))
+// type StakedAmount struct{
+//   Strategy string
+//   Amount string // base10 representation
+// }
+
+func genOpKey(opAddr string) []byte {
+	return ecdsa.Keccak256([]byte(opAddr))
 }
 
-func (cache *MemCache) CacheOperator(key []byte, operator Operator) error {
+func (cache *MemCache) CacheOperatorCount(count uint32) error {
+	cacheKey := ecdsa.Keccak256([]byte("skateavs:operator_count"))
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, count)
+	if err != nil {
+		return err
+	}
+	return cache.Set(cacheKey, buf.Bytes(), 0)
+}
+
+func (cache *MemCache) GetOperatorCount() (*uint32, error) {
+	cacheKey := ecdsa.Keccak256([]byte("skateavs:operator_count"))
+	data, err := cache.Get(cacheKey)
+	if err != nil {
+		return nil, err // Return zero and the error if unable to get the data
+	}
+
+	buf := bytes.NewReader(data)
+	var count uint32
+	err = binary.Read(buf, binary.BigEndian, &count)
+	if err != nil {
+		return nil, err // Return zero and the error if unable to decode the data
+	}
+
+	return &count, nil // Successfully retrieved and decoded the count
+}
+
+func (cache *MemCache) CacheOperator(operator Operator) error {
+	key := genOpKey(operator.Address)
 	cacheKey := ecdsa.Keccak256([]byte("skateavs:operator:"), key)
 	data, err := json.Marshal(operator)
 	if err != nil {
@@ -36,7 +71,8 @@ func (cache *MemCache) CacheOperator(key []byte, operator Operator) error {
 	return cache.Set(cacheKey, data, 0)
 }
 
-func (cache *MemCache) GetOperator(key []byte) (*Operator, error) {
+func (cache *MemCache) GetOperator(opAddr string) (*Operator, error) {
+	key := genOpKey(opAddr)
 	cacheKey := ecdsa.Keccak256([]byte("skateavs:operator:"), key)
 	data, err := cache.Get(cacheKey)
 	if err != nil {
@@ -54,11 +90,13 @@ func (cache *MemCache) GetOperator(key []byte) (*Operator, error) {
 	return &result, nil
 }
 
-func (cache *MemCache) EvictOperator(key []byte) bool {
+func (cache *MemCache) EvictOperator(opAddr string) bool {
+	key := genOpKey(opAddr)
 	cacheKey := ecdsa.Keccak256([]byte("skateavs:operator:"), key)
 	return cache.Del(cacheKey)
 }
 
+// NOTE: for future uses
 func (cache *MemCache) CacheStake(strategy string, value big.Int) error {
 	cacheKey := ecdsa.Keccak256([]byte("skateavs:stake:"), []byte(strategy))
 	return cache.Set(cacheKey, value.Bytes(), 0)
@@ -74,7 +112,7 @@ func (cache *MemCache) GetStake(strategy string) (*big.Int, error) {
 		return nil, nil
 	}
 
-  result := new(big.Int)
+	result := new(big.Int)
 
 	return result.SetBytes(data), nil
 }

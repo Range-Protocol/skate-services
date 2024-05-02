@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
-	// sdkAvsClient "github.com/Layr-Labs/eigensdk-go/chainio/clients/avsregistry"
 	sdkElClient "github.com/Layr-Labs/eigensdk-go/chainio/clients/elcontracts"
 	sdkTypes "github.com/Layr-Labs/eigensdk-go/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -16,11 +15,6 @@ import (
 	"skatechain.org/lib/logging"
 	"skatechain.org/lib/metrics"
 	"skatechain.org/lib/on-chain/backend"
-)
-
-const (
-	AVS_NAME = "skate-avs"
-	SEM_VER  = "0.1.0"
 )
 
 // NOTE: operator registration interface
