@@ -30,12 +30,14 @@ var (
 	holeskyStrategy = common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071")
 )
 
-func PublishTaskToAVS(ctx context.Context, task skateappMemcache.Message) {
+func PublishTaskToAVS(ctx context.Context) {
 	ticker := time.NewTicker(12 * time.Second)
 	defer ticker.Stop()
 	relayerLogger.Info("Start AVS publisher process...")
 
 	var cachedTasks []skateappMemcache.Message
+  relayerAddress := ctx.Value("addres").(common.Address)
+  passphrase := ctx.Value("passphrase").(string)
 
 	// step 1: populate cachedTask with non-completed tasks in the db
 
@@ -66,7 +68,7 @@ func PublishTaskToAVS(ctx context.Context, task skateappMemcache.Message) {
 
 					// Create a transactor to submit on-chain
 					chainId := new(big.Int).SetUint64(uint64(task.ChainId))
-					txOptsWithSigner, _ := backend.LoadTransactorFromKeystore(chainId)
+					txOptsWithSigner, _ := backend.LoadTransactorFromKeystore(relayerAddress, passphrase, chainId)
 					tx, err := holeskyAvsContract.BindingISkateAVSTransactor.SubmitData(
 						txOptsWithSigner,
 						taskId,

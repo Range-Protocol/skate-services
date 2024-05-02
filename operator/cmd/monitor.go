@@ -13,6 +13,7 @@ import (
 	"skatechain.org/lib/monitor"
 	"skatechain.org/lib/on-chain/backend"
 	"skatechain.org/lib/on-chain/network"
+	"skatechain.org/operator/db"
 	oMonitor "skatechain.org/operator/monitor"
 )
 
@@ -45,6 +46,8 @@ func startMonitor() {
 	nollie := network.ChainID(5051)
 	nollie_backend0, _ := backend.NewBackend("wss://nollie-rpc.skatechain.org/socket")
 	nollie_SkateApp := common.HexToAddress("0x2968C1663B41Cc633540148c679f43136a4644Fc")
+
+  db.InitializeSkateApp()
 
 	contractAddrs := map[network.ChainID]common.Address{
 		nollie: nollie_SkateApp,

@@ -54,7 +54,10 @@ func SubscribeSkateApp(addr common.Address, backend backend.Backend, ctx context
 				if monitor.Verbose {
 					monitor.Logger.Info("Received TaskCreated event:", "task", event)
 				}
-				PostProcessLog(event)
+				err = PostProcessLog(event)
+				if err != nil && monitor.Verbose {
+					monitor.Logger.Error("Postprocess task error", "error", err)
+				}
 				// TODO: Operator sign the task and publish to our relayer node
 			case err := <-watcher.Err():
 				if err != nil && monitor.Verbose {
