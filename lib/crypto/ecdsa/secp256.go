@@ -52,10 +52,6 @@ func EcRecover(digestHash []byte, sig [65]byte) (common.Address, error) {
 	return ethcrypto.PubkeyToAddress(*pubkey), nil
 }
 
-func PubKeytoAddress(pubKey ecdsa.PublicKey) common.Address {
-	return ethcrypto.PubkeyToAddress(pubKey)
-}
-
 // Verify ethereum signed message
 // NOTE: digestHash must be 32 bytes
 func Verify(address common.Address, digestHash []byte, sig [65]byte) (bool, error) {

@@ -21,7 +21,27 @@ func Redact(input string) string {
 	return input
 }
 
-// custom AVS addr, else default
+// verbosity level
 func BindVerbose(cmd *cobra.Command, verbose *bool) {
 	cmd.Flags().BoolVar(verbose, "verbose", *verbose, "Run with verbose logs")
+}
+
+// privateKey as input
+func BindEnvConfig(cmd *cobra.Command, filename *string) {
+	cmd.Flags().StringVar(filename, "address", "testnet", "Run with verbose logs")
+}
+
+// privateKey as input
+// func BindPrivateKey(cmd *cobra.Command, privateKey *string) {
+// 	cmd.Flags().StringVar(privateKey, "address", *privateKey, "Run with verbose logs")
+// }
+
+// custom signer
+func BindSigner(cmd *cobra.Command, signer *string) {
+	cmd.Flags().StringVar(signer, "signer", *signer, "Override config signer, required passphrase")
+}
+
+// Passphrase for unlocking signer keystore
+func BindPassphrase(cmd *cobra.Command, passphrase *string) {
+	cmd.Flags().StringVar(passphrase, "passphrase", *passphrase, "Run with verbose logs")
 }

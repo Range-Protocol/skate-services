@@ -12,6 +12,7 @@ import (
 	pb "skatechain.org/api/pb/relayer"
 
 	bindingSkateApp "skatechain.org/contracts/bindings/SkateApp"
+	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/crypto/ecdsa"
 	"skatechain.org/lib/monitor"
 	"skatechain.org/lib/on-chain/avs"
@@ -22,14 +23,14 @@ import (
 // WARNING: Must run with wss rpc.
 //
 // Server subscription only available on websocket endpoints.
-func SubscribeSkateApp(addr common.Address, backend backend.Backend, ctx context.Context) error {
-	contract, err := bindingSkateApp.NewBindingSkateApp(addr, backend)
+func SubscribeSkateApp(addr common.Address, be backend.Backend, ctx context.Context) error {
+	contract, err := bindingSkateApp.NewBindingSkateApp(addr, be)
 	if err != nil {
 		monitor.Logger.Error("Contract binding error: ", "error", err)
 		return err
 	}
 
-	latest, _ := backend.BlockNumber(ctx)
+	latest, _ := be.BlockNumber(ctx)
 	watchOpts := &bind.WatchOpts{
 		Start:   &latest,
 		Context: ctx,
@@ -44,10 +45,13 @@ func SubscribeSkateApp(addr common.Address, backend backend.Backend, ctx context
 		return err
 	}
 
-	opPrivateKey := ctx.Value("privateKey").(*ecdsa.PrivateKey)
+	signer := ctx.Value("signer").(*libcmd.SignerConfig)
 
-	if opPrivateKey == nil {
+	var privateKey *ecdsa.PrivateKey
+	if signer == nil {
 		monitor.Logger.Info("No private key provided, run with watch-only mode")
+	} else {
+		privateKey, _ = backend.PrivateKeyFromKeystore(common.HexToAddress(signer.Address), signer.Passphrase)
 	}
 
 	// Event handler
@@ -57,22 +61,20 @@ func SubscribeSkateApp(addr common.Address, backend backend.Backend, ctx context
 			case task, ok := <-sink:
 				if !ok {
 					monitor.Logger.Error("Sink error, go-eth related")
-          return
+					return
 				}
 				if monitor.Verbose {
 					monitor.Logger.Info("Received TaskCreated event:", "task", task)
 				}
-				if opPrivateKey != nil {
-					err = PostProcessLog(opPrivateKey, task)
-					if err != nil && monitor.Verbose {
-						monitor.Logger.Error("Sign and publish error", "error", err)
-					}
+				err = PostProcessLog(privateKey, task)
+				if err != nil && monitor.Verbose {
+					monitor.Logger.Error("Postprocess log failed", "error", err)
 				}
 			case err := <-watcher.Err():
 				if err != nil && monitor.Verbose {
 					monitor.Logger.Error("Watcher received error: ", "error", err)
 				}
-        return
+				return
 			}
 		}
 	}()
@@ -87,9 +89,11 @@ func PostProcessLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkateApp.B
 	if err != nil {
 		return err
 	}
-	err = signAndBroadcastLog(privateKey, bindingTask)
-	if err != nil {
-		return err
+	if privateKey != nil {
+		err = signAndBroadcastLog(privateKey, bindingTask)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -102,6 +106,7 @@ func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkate
 	)
 	signature, err := ecdsa.Sign(digestHash, privateKey)
 	if err != nil {
+		return err
 	}
 
 	// Step 2: broad cast log over grpc server
@@ -159,6 +164,7 @@ func dumpLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
 }
 
 // NOTE: work over both https and wss, polling every 2 seconds by default
+// To be implemented (logic not up to date)
 func PollSkateApp(addr common.Address, backend backend.Backend, ctx context.Context) error {
 	contract, err := bindingSkateApp.NewBindingSkateApp(addr, backend)
 	if err != nil {

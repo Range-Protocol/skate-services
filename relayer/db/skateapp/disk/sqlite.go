@@ -31,10 +31,10 @@ func init() {
 }
 
 type SignedTask struct {
-	Id        int64
+	TaskId    uint32
 	Message   string
 	Initiator string
-	ChainType string
+	ChainType uint32
 	ChainId   uint32
 	Hash      string
 	Operator  string
@@ -59,7 +59,7 @@ func SkateApp_InsertSignedTask(signedTask SignedTask) error {
 	_, err := SkateAppDB.Exec(
 		"INSERT INTO ? (taskId, message, initiator, chainId, chainType, hash, operator, signature) VALUES (?,?,?,?,?,?,?,?)",
 		SignedTaskSchema,
-		signedTask.Id, signedTask.Message, signedTask.Initiator, signedTask.ChainId,
+		signedTask.TaskId, signedTask.Message, signedTask.Initiator, signedTask.ChainId,
 		signedTask.ChainType, signedTask.Hash, signedTask.Operator, signedTask.Signature,
 	)
 	if err != nil {
@@ -84,7 +84,7 @@ func SkateApp_RetriveSignedTasks(query string, args ...any) ([]SignedTask, error
 		var entryid int
 
 		err := rows.Scan(
-			&entryid, &task.Id, &task.Message, &task.Initiator,
+			&entryid, &task.TaskId, &task.Message, &task.Initiator,
 			&task.ChainId, &task.ChainType, &task.Hash, &task.Operator, &task.Signature,
 		)
 		if err != nil {

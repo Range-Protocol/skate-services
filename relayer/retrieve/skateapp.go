@@ -16,6 +16,7 @@ import (
 	"skatechain.org/lib/on-chain/avs"
 	"skatechain.org/lib/on-chain/backend"
 	avsMemcache "skatechain.org/relayer/db/avs/mem"
+	skateappDb "skatechain.org/relayer/db/skateapp/disk"
 	skateappMemcache "skatechain.org/relayer/db/skateapp/mem"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -122,6 +123,21 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 		Signature: signature,
 	}
 	taskCache.AppendSignature(msgKey, sig)
+
+	signedTask := skateappDb.SignedTask{
+		TaskId:    in.Task.TaskId,
+		Message:   in.Task.Msg,
+		Initiator: in.Task.Initiator,
+		ChainId:   in.Task.ChainId,
+		ChainType: uint32(in.Task.ChainType),
+		Hash:      string(in.Task.Hash),
+		Operator:  in.Signature.Address,
+		Signature: string(in.Signature.Signature),
+	}
+	err = skateappDb.SkateApp_InsertSignedTask(signedTask)
+	if err != nil && Verbose {
+		relayerLogger.Error("Insert signed task to db failed", "error", err)
+	}
 
 	return &pb.TaskSubmitReply{
 		Result: pb.TaskStatus_PROCESSING,

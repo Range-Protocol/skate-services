@@ -1,6 +1,5 @@
 package network
 
-
 import (
 	"context"
 	"encoding/json"
@@ -13,17 +12,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type ChainID = uint64
+type ChainID = uint32
+
 // EVMChain defines the configuration of an execution chain that supports
 type EVMChain struct {
-	ID              ChainID         // Chain ID asa per https://chainlist.org
-	Name            string         // Chain name as per https://chainlist.org
-	RPCURL          string         // RPC URL of the chain
-	AuthRPCURL      string         // RPC URL of the chain with JWT authentication enabled
-	PortalAddress   common.Address // Address of the omni portal contract on the chain
-	DeployHeight    uint64         // Height that the portal contracts were deployed
-	IsEthereum      bool           // Whether this is the ethereum layer1 chain
-	BlockDuration   time.Duration  // Block period of the chain
+	ID            ChainID        // Chain ID asa per https://chainlist.org
+	Name          string         // Chain name as per https://chainlist.org
+	RPCURL        string         // RPC URL of the chain
+	AuthRPCURL    string         // RPC URL of the chain with JWT authentication enabled
+	PortalAddress common.Address // Address of the omni portal contract on the chain
+	DeployHeight  uint64         // Height that the portal contracts were deployed
+	IsEthereum    bool           // Whether this is the ethereum layer1 chain
+	BlockDuration time.Duration  // Block period of the chain
 }
 
 // Load loads the network configuration from the given path.
@@ -63,14 +63,14 @@ func Save(ctx context.Context, network Network, path string) error {
 }
 
 type chainJSON struct {
-	ID                uint64            `json:"id"`
-	Name              string            `json:"name"`
-	RPCURL            string            `json:"rpcurl"`
-	AuthRPCURL        string            `json:"auth_rpcurl,omitempty"`
-	PortalAddress     string            `json:"portal_address"`
-	DeployHeight      uint64            `json:"deploy_height"`
-	IsEthereum        bool              `json:"is_ethereum,omitempty"`
-	BlockPeriod       string            `json:"block_period"`
+	ID            uint32 `json:"id"`
+	Name          string `json:"name"`
+	RPCURL        string `json:"rpcurl"`
+	AuthRPCURL    string `json:"auth_rpcurl,omitempty"`
+	PortalAddress string `json:"portal_address"`
+	DeployHeight  uint64 `json:"deploy_height"`
+	IsEthereum    bool   `json:"is_ethereum,omitempty"`
+	BlockPeriod   string `json:"block_period"`
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
@@ -91,14 +91,14 @@ func (c *EVMChain) UnmarshalJSON(bz []byte) error {
 	}
 
 	*c = EVMChain{
-		ID:                cj.ID,
-		Name:              cj.Name,
-		RPCURL:            cj.RPCURL,
-		AuthRPCURL:        cj.AuthRPCURL,
-		PortalAddress:     portalAddr,
-		DeployHeight:      cj.DeployHeight,
-		IsEthereum:        cj.IsEthereum,
-		BlockDuration:     blockPeriod,
+		ID:            cj.ID,
+		Name:          cj.Name,
+		RPCURL:        cj.RPCURL,
+		AuthRPCURL:    cj.AuthRPCURL,
+		PortalAddress: portalAddr,
+		DeployHeight:  cj.DeployHeight,
+		IsEthereum:    cj.IsEthereum,
+		BlockDuration: blockPeriod,
 	}
 
 	return nil
@@ -112,14 +112,14 @@ func (c EVMChain) MarshalJSON() ([]byte, error) {
 	}
 
 	cj := chainJSON{
-		ID:                c.ID,
-		Name:              c.Name,
-		RPCURL:            c.RPCURL,
-		AuthRPCURL:        c.AuthRPCURL,
-		PortalAddress:     portalAddr,
-		DeployHeight:      c.DeployHeight,
-		IsEthereum:        c.IsEthereum,
-		BlockPeriod:       c.BlockDuration.String(),
+		ID:            c.ID,
+		Name:          c.Name,
+		RPCURL:        c.RPCURL,
+		AuthRPCURL:    c.AuthRPCURL,
+		PortalAddress: portalAddr,
+		DeployHeight:  c.DeployHeight,
+		IsEthereum:    c.IsEthereum,
+		BlockPeriod:   c.BlockDuration.String(),
 	}
 
 	bz, err := json.Marshal(cj)

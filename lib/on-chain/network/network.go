@@ -24,8 +24,8 @@ func (n Network) Validate() error {
 }
 
 // ChainIDs returns the all chain IDs in the network.
-func (n Network) ChainIDs() []uint64 {
-	resp := make([]uint64, 0, len(n.Chains))
+func (n Network) ChainIDs() []uint32 {
+	resp := make([]uint32, 0, len(n.Chains))
 	for _, chain := range n.Chains {
 		resp = append(resp, chain.ID)
 	}
@@ -34,8 +34,8 @@ func (n Network) ChainIDs() []uint64 {
 }
 
 // ChainNamesByIDs returns the all chain IDs and names in the network.
-func (n Network) ChainNamesByIDs() map[uint64]string {
-	resp := make(map[uint64]string)
+func (n Network) ChainNamesByIDs() map[uint32]string {
+	resp := make(map[uint32]string)
 	for _, chain := range n.Chains {
 		resp[chain.ID] = chain.Name
 	}
@@ -44,7 +44,7 @@ func (n Network) ChainNamesByIDs() map[uint64]string {
 }
 
 // Chain returns the chain config for the given ID or false if it does not exist.
-func (n Network) GetChain(id uint64) (EVMChain, bool) {
+func (n Network) GetChain(id uint32) (EVMChain, bool) {
 	for _, chain := range n.Chains {
 		if chain.ID == id {
 			return chain, true

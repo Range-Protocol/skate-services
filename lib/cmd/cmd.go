@@ -4,34 +4,8 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"os/signal"
-	"strings"
-	"syscall"
-
-	"github.com/pkg/errors"
-	"skatechain.org/lib/logging"
-
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
-
-// Main is the main entry point for the command line tool.
-func Main(cmd *cobra.Command, logger *logging.Logger) {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-
-	SilenceErrUsage(cmd)
-
-	err := cmd.ExecuteContext(ctx)
-
-	cancel()
-
-	if err != nil {
-		logger.Fatal("!! Fatal error occurred, system exited with Code=1:", err)
-	}
-}
 
 // NewRootCmd returns a new root cobra command that handles our command line tool.
 // It sets up the general viper config and binds the cobra flags to the viper flags.
@@ -41,9 +15,9 @@ func NewRootCmd(appName string, appDescription string, subCmds ...*cobra.Command
 		Use:   appName,
 		Short: appDescription,
 		Args:  cobra.NoArgs,
-		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			return initializeConfig(appName, cmd)
-		},
+		// PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+		// 	return initializeConfig(appName, cmd)
+		// },
 	}
 
 	root.AddCommand(subCmds...)
@@ -58,64 +32,4 @@ func SilenceErrUsage(cmd *cobra.Command) {
 	for _, cmd := range cmd.Commands() {
 		SilenceErrUsage(cmd)
 	}
-}
-
-// initializeConfig sets up the general viper config and binds the cobra flags to the viper flags.
-func initializeConfig(appName string, cmd *cobra.Command) error {
-	v := viper.New()
-
-	// Set up the configuration file path
-	v.SetConfigFile("configs/testnet.yaml")
-
-  x := v.GetString("skate_app")
-  print(x)
-	// Attempt to read the config file
-	if err := v.ReadInConfig(); err != nil {
-		// Handle error if the config file cannot be read
-    print("READ FILE ERROR")
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return errors.Wrap(err, "read config file")
-		}
-	}
-
-	v.SetEnvPrefix(appName)
-	v.AutomaticEnv()
-	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-
-	// Bind the current command's flags to viper
-	return bindFlags(cmd, v)
-}
-
-// bindFlags binds each cobra flag to its associated viper configuration (config file and environment variable).
-func bindFlags(cmd *cobra.Command, v *viper.Viper) error {
-	var lastErr error
-
-	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		// Cobra provided flags take priority
-		if f.Changed {
-			return
-		}
-
-		// Define all the viper flag names to check
-		viperNames := []string{
-			f.Name,
-			strings.Replace(f.Name, "-", ".", 1),
-		}
-
-		for _, name := range viperNames {
-			if !v.IsSet(name) {
-				continue
-			}
-
-			val := v.Get(name)
-			err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
-			if err != nil {
-				lastErr = err
-			}
-
-			break
-		}
-	})
-
-	return lastErr
 }

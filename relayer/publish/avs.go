@@ -36,7 +36,7 @@ func PublishTaskToAVS(ctx context.Context) {
 	defer ticker.Stop()
 	relayerLogger.Info("Start AVS publisher process...")
 
-  cachedTasks := make([]skateappMemcache.Message, 0)
+  storedTasks := make([]skateappMemcache.Message, 0)
 
 	relayerAddress := ctx.Value("address").(common.Address)
 	passphrase := ctx.Value("passphrase").(string)
@@ -51,7 +51,7 @@ func PublishTaskToAVS(ctx context.Context) {
 			return
 		case <-ticker.C:
 			// TODO: revalidate cachedTask
-			for _, task := range cachedTasks {
+			for _, task := range storedTasks {
 				msgKey := skateappMemcache.GenKey(task)
 				cachedSignatures, _ := taskCache.GetSignatures(msgKey)
 				operatorCounts, _ := operatorCache.GetOperatorCount()
@@ -93,7 +93,6 @@ func PublishTaskToAVS(ctx context.Context) {
 					relayerLogger.Info("Transaction receipt", "status", receipt.Status)
 				}
 			}
-
 		}
 	}
 }
