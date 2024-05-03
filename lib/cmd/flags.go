@@ -28,7 +28,7 @@ func BindVerbose(cmd *cobra.Command, verbose *bool) {
 
 // privateKey as input
 func BindEnvConfig(cmd *cobra.Command, filename *string) {
-	cmd.Flags().StringVar(filename, "address", "testnet", "Run with verbose logs")
+	cmd.Flags().StringVar(filename, "config", "testnet", "Config file to set up the environment")
 }
 
 // privateKey as input
@@ -43,5 +43,5 @@ func BindSigner(cmd *cobra.Command, signer *string) {
 
 // Passphrase for unlocking signer keystore
 func BindPassphrase(cmd *cobra.Command, passphrase *string) {
-	cmd.Flags().StringVar(passphrase, "passphrase", *passphrase, "Run with verbose logs")
+	cmd.Flags().StringVar(passphrase, "passphrase", *passphrase, "Passphrase to unlock the signer")
 }

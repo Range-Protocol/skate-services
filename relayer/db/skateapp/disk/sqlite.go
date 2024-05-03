@@ -55,7 +55,7 @@ func InitializeSkateApp() {
 	)`, SignedTaskSchema)
 }
 
-func SkateApp_InsertSignedTask(signedTask SignedTask) error {
+func InsertSignedTask(signedTask SignedTask) error {
 	_, err := SkateAppDB.Exec(
 		"INSERT INTO ? (taskId, message, initiator, chainId, chainType, hash, operator, signature) VALUES (?,?,?,?,?,?,?,?)",
 		SignedTaskSchema,
@@ -69,8 +69,8 @@ func SkateApp_InsertSignedTask(signedTask SignedTask) error {
 	return nil
 }
 
-func SkateApp_RetriveSignedTasks(query string, args ...any) ([]SignedTask, error) {
-	rows, err := SkateAppDB.Query(query, args)
+func RetrieveSignedTasks() ([]SignedTask, error) {
+	rows, err := SkateAppDB.Query("SELECT * FROM ?", SignedTaskSchema)
 	if err != nil {
 		TaskLogger.Error("SelectAllTasks failed", "err", err)
 		return nil, err

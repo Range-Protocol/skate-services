@@ -38,10 +38,13 @@ var (
 
 type submissionServer struct {
 	pb.UnimplementedSubmissionServer
+	ctx context.Context
 }
 
-func NewSubmissionServer() *submissionServer {
-	return &submissionServer{}
+func NewSubmissionServer(ctx context.Context) *submissionServer {
+	return &submissionServer{
+		ctx: ctx,
+	}
 }
 
 func (s *submissionServer) Start() {
@@ -58,7 +61,10 @@ func (s *submissionServer) Start() {
 }
 
 func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequest) (*pb.TaskSubmitReply, error) {
-	relayerLogger.Info("Got request", "payload", in)
+	if Verbose {
+		relayerLogger.Info("Got request", "payload", in)
+	}
+
 	invalidReply := &pb.TaskSubmitReply{
 		Result: pb.TaskStatus_REJECTED,
 	}
@@ -134,9 +140,12 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 		Operator:  in.Signature.Address,
 		Signature: string(in.Signature.Signature),
 	}
-	err = skateappDb.SkateApp_InsertSignedTask(signedTask)
+	err = skateappDb.InsertSignedTask(signedTask)
 	if err != nil && Verbose {
 		relayerLogger.Error("Insert signed task to db failed", "error", err)
+		return &pb.TaskSubmitReply{
+			Result: pb.TaskStatus_REJECTED,
+		}, errors.New("Relayer error, processor not responding")
 	}
 
 	return &pb.TaskSubmitReply{

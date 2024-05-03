@@ -6,7 +6,6 @@ import (
 	"skatechain.org/lib/logging"
 
 	"github.com/spf13/cobra"
-	// "github.com/spf13/viper"
 
 	"github.com/ethereum/go-ethereum/common"
 

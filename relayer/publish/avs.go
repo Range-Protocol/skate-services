@@ -5,30 +5,17 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	pb "skatechain.org/api/pb/relayer"
 	bindingISkateAVS "skatechain.org/contracts/bindings/ISkateAVS"
-	"skatechain.org/lib/logging"
+	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/on-chain/avs"
 	"skatechain.org/lib/on-chain/backend"
-	avsMemcache "skatechain.org/relayer/db/avs/mem"
 	"skatechain.org/relayer/db/skateapp/disk"
 	skateappMemcache "skatechain.org/relayer/db/skateapp/mem"
 
 	_ "github.com/joho/godotenv/autoload"
-)
-
-var (
-	relayerLogger = logging.NewLoggerWithConsoleWriter()
-	Verbose       = true
-	taskCache     = skateappMemcache.NewCache(100 * 1024 * 1024) // 100MB
-	operatorCache = avsMemcache.NewCache(2 * 1024 * 1024)        // 2MB
-
-	// NOTE: change with config files
-	holeskyBackend, _     = backend.NewBackend("https://holesky.drpc.org")
-	holeskyAvsContract, _ = bindingISkateAVS.NewBindingISkateAVS(
-		common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071"), holeskyBackend,
-	)
-	holeskyStrategy = common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071")
 )
 
 func PublishTaskToAVS(ctx context.Context) {
@@ -36,13 +23,22 @@ func PublishTaskToAVS(ctx context.Context) {
 	defer ticker.Stop()
 	relayerLogger.Info("Start AVS publisher process...")
 
-  storedTasks := make([]skateappMemcache.Message, 0)
+	config := ctx.Value("config").(*libcmd.EnvironmentConfig)
+	holeskyBackend, err := backend.NewBackend(config.SkateHttpRPC)
+	if err != nil {
+		relayerLogger.Fatal("AVS rpc error", "rpcUrl", config.SkateHttpRPC)
+		return
+	}
+	holeskyAvsContract, err := bindingISkateAVS.NewBindingISkateAVS(
+		common.HexToAddress(config.SkateAVS), holeskyBackend,
+	)
+	if err != nil {
+		relayerLogger.Fatal("Invalid avs contract", "address", config.SkateAVS)
+		return
+	}
 
-	relayerAddress := ctx.Value("address").(common.Address)
-	passphrase := ctx.Value("passphrase").(string)
-
-	// step 1: populate cachedTask with non-completed tasks in the db
-  disk.SkateApp_RetriveSignedTasks("SELECT * FROM ?", disk.SignedTaskSchema)
+	signer := ctx.Value("signer").(*libcmd.SignerConfig)
+	privateKey, _ := backend.PrivateKeyFromKeystore(common.HexToAddress(signer.Address), signer.Passphrase)
 
 	for {
 		select {
@@ -50,28 +46,22 @@ func PublishTaskToAVS(ctx context.Context) {
 			relayerLogger.Info("AVS publish process stopped!")
 			return
 		case <-ticker.C:
-			// TODO: revalidate cachedTask
-			for _, task := range storedTasks {
-				msgKey := skateappMemcache.GenKey(task)
-				cachedSignatures, _ := taskCache.GetSignatures(msgKey)
-				operatorCounts, _ := operatorCache.GetOperatorCount()
+			// TODO: revalidate signed tasks info
+			tasks := fetchSignedTasks()
+			for _, task := range tasks {
+				// NOTE: use memcache in future versions
+				signatures, _ := fetchSignaturesForTask()
+				operators, _ := holeskyAvsContract.Operators(&bind.CallOpts{})
+				operatorCounts := len(operators)
 
 				// Reference from SkateAVS contract, should change to (op * 2 + 2) / 3
-				if uint32(len(cachedSignatures))*10_000 > (*operatorCounts)*6_666 {
+				if len(signatures)*10_000 > operatorCounts*6_666 {
 					taskId := new(big.Int).SetUint64(uint64(task.TaskId))
 					messageData := avs.TaskData(task.Message, task.Initiator, task.ChainType, task.ChainId)
-					signatures := make([]bindingISkateAVS.ISkateAVSSignatureTuple, len(cachedSignatures))
-					for _, sig := range cachedSignatures {
-						signatureTuple := bindingISkateAVS.ISkateAVSSignatureTuple{
-							Operator:  common.HexToAddress(sig.Operator),
-							Signature: sig.Signature[:],
-						}
-						signatures = append(signatures, signatureTuple)
-					}
 
 					// Create a transactor to submit on-chain
 					chainId := new(big.Int).SetUint64(uint64(task.ChainId))
-					txOptsWithSigner, _ := backend.TransactorFromKeystore(relayerAddress, passphrase, chainId)
+					txOptsWithSigner, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
 					tx, err := holeskyAvsContract.BindingISkateAVSTransactor.SubmitData(
 						txOptsWithSigner,
 						taskId,
@@ -95,4 +85,29 @@ func PublishTaskToAVS(ctx context.Context) {
 			}
 		}
 	}
+}
+
+type Signed = bindingISkateAVS.ISkateAVSSignatureTuple
+
+func fetchSignaturesForTask() ([]Signed, error) {
+	var signatures []Signed
+	// TODO: fetch from database
+
+	return signatures, nil
+}
+
+func fetchSignedTasks() []skateappMemcache.Message {
+	storedTasks, _ := disk.RetrieveSignedTasks()
+	tasks := make([]skateappMemcache.Message, len(storedTasks))
+	for i, stask := range storedTasks {
+		tasks[i] = skateappMemcache.Message{
+			TaskId:    stask.TaskId,
+			ChainId:   stask.ChainId,
+			ChainType: pb.ChainType_EVM,
+			Message:   stask.Message,
+			Initiator: stask.Initiator,
+		}
+	}
+
+	return tasks
 }
