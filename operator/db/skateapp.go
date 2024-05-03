@@ -1,8 +1,7 @@
 package db
 
 import (
-	"encoding/hex"
-	"fmt"
+	// "encoding/hex"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -10,9 +9,7 @@ import (
 	"skatechain.org/lib/db"
 )
 
-var (
-	TaskLogger = db.NewFileLogger(DbDir, "skateapp_tasks.log")
-)
+var TaskLogger = db.NewFileLogger(DbDir, "skateapp_tasks.log")
 
 const TaskSchema = "Tasks"
 
@@ -21,32 +18,28 @@ type Task struct {
 	Message string
 	Chain   uint32
 	Signer  string
-	Hash    string
+	Hash    [32]byte
 }
 
 func InitializeSkateApp() {
-	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ? (
+	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ` + TaskSchema + ` (
 		id       INTEGER PRIMARY KEY AUTOINCREMENT,
 	  taskId   TEXT,
 	  message  TEXT,
 	  signer   TEXT,
 	  chainId  INTEGER,
 	  hash     TEXT
-	)`, TaskSchema)
+	)`)
 }
 
 type bindingTask = bindingSkateApp.BindingSkateAppTaskCreated
 
 func task_dbToBinding(task *Task) *bindingTask {
-	hashBytes, _ := hex.DecodeString(task.Hash)
-	if len(hashBytes) != 32 {
-		panic(fmt.Sprintf("Malformed hash, must be 32 bytes, got %d", len(hashBytes)))
-	}
 	return &bindingTask{
 		TaskId:   big.NewInt(task.Id),
 		Message:  task.Message,
 		Signer:   common.HexToAddress(task.Signer),
-		TaskHash: [32]byte(hashBytes),
+		TaskHash: task.Hash,
 		Chain:    task.Chain,
 	}
 }
@@ -56,7 +49,7 @@ func task_bindingToDb(task *bindingSkateApp.BindingSkateAppTaskCreated) *Task {
 		Id:      task.TaskId.Int64(),
 		Message: task.Message,
 		Signer:  task.Signer.Hex(),
-		Hash:    hex.EncodeToString(task.TaskHash[:]),
+		Hash:    task.TaskHash,
 		Chain:   task.Chain,
 	}
 }
@@ -64,8 +57,7 @@ func task_bindingToDb(task *bindingSkateApp.BindingSkateAppTaskCreated) *Task {
 func SkateApp_InsertTask(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
 	task := task_bindingToDb(bindingTask)
 	_, err := SkateAppDB.Exec(
-		"INSERT INTO ? (taskId, message, signer, chainId, hash) VALUES (?, ?, ?, ?, ?)",
-    TaskSchema,
+		"INSERT INTO "+TaskSchema+" (taskId, message, signer, chainId, hash) VALUES (?, ?, ?, ?, ?)",
 		task.Id, task.Message, task.Signer, task.Chain, task.Hash,
 	)
 	if err != nil {
@@ -75,8 +67,8 @@ func SkateApp_InsertTask(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated
 	return nil
 }
 
-func SkateApp_SelectTasks(query string, args ...any) ([]bindingTask, error) {
-	rows, err := SkateAppDB.Query(query, args)
+func SkateApp_SelectTasks() ([]bindingTask, error) {
+	rows, err := SkateAppDB.Query("SELECT * FROM " + TaskSchema)
 	if err != nil {
 		TaskLogger.Error("SelectAllTasks failed", "err", err)
 		return nil, err

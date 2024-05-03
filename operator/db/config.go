@@ -25,4 +25,5 @@ func init() {
 		panic("Relayer DB initialization failed")
 	}
 	SkateAppDB = db
+  InitializeSkateApp()
 }

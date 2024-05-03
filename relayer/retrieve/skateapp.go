@@ -18,8 +18,6 @@ import (
 	avsMemcache "skatechain.org/relayer/db/avs/mem"
 	skateappDb "skatechain.org/relayer/db/skateapp/disk"
 	skateappMemcache "skatechain.org/relayer/db/skateapp/mem"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
@@ -136,9 +134,9 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 		Initiator: in.Task.Initiator,
 		ChainId:   in.Task.ChainId,
 		ChainType: uint32(in.Task.ChainType),
-		Hash:      string(in.Task.Hash),
+		Hash:      [32]byte(in.Task.Hash),
 		Operator:  in.Signature.Address,
-		Signature: string(in.Signature.Signature),
+		Signature: [65]byte(in.Signature.Signature),
 	}
 	err = skateappDb.InsertSignedTask(signedTask)
 	if err != nil && Verbose {

@@ -13,9 +13,6 @@ import (
 	"skatechain.org/lib/on-chain/avs"
 	"skatechain.org/lib/on-chain/backend"
 	"skatechain.org/relayer/db/skateapp/disk"
-	skateappMemcache "skatechain.org/relayer/db/skateapp/mem"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func PublishTaskToAVS(ctx context.Context) {
@@ -46,18 +43,17 @@ func PublishTaskToAVS(ctx context.Context) {
 			relayerLogger.Info("AVS publish process stopped!")
 			return
 		case <-ticker.C:
-			// TODO: revalidate signed tasks info
 			tasks := fetchSignedTasks()
 			for _, task := range tasks {
 				// NOTE: use memcache in future versions
-				signatures, _ := fetchSignaturesForTask()
+				signatures, _ := fetchSignaturesForTask(task)
 				operators, _ := holeskyAvsContract.Operators(&bind.CallOpts{})
 				operatorCounts := len(operators)
 
 				// Reference from SkateAVS contract, should change to (op * 2 + 2) / 3
 				if len(signatures)*10_000 > operatorCounts*6_666 {
 					taskId := new(big.Int).SetUint64(uint64(task.TaskId))
-					messageData := avs.TaskData(task.Message, task.Initiator, task.ChainType, task.ChainId)
+					messageData := avs.TaskData(task.Message, task.Initiator, pb.ChainType_EVM, task.ChainId)
 
 					// Create a transactor to submit on-chain
 					chainId := new(big.Int).SetUint64(uint64(task.ChainId))
@@ -87,27 +83,44 @@ func PublishTaskToAVS(ctx context.Context) {
 	}
 }
 
-type Signed = bindingISkateAVS.ISkateAVSSignatureTuple
+type SignatureTuple = bindingISkateAVS.ISkateAVSSignatureTuple
 
-func fetchSignaturesForTask() ([]Signed, error) {
-	var signatures []Signed
-	// TODO: fetch from database
+func fetchSignaturesForTask(task disk.SignedTask) ([]SignatureTuple, error) {
+	var signatures []SignatureTuple
+
+	rows, err := disk.SkateAppDB.Query(
+		`SELECT operator, signature FROM `+disk.SignedTaskSchema+` WHERE 
+    taskId = ? AND
+    chainId = ? AND
+    chainType = ?`,
+		disk.SignedTaskSchema,
+		task.TaskId,
+		task.ChainId,
+		task.ChainType,
+	)
+	if err != nil {
+		return signatures, err
+	}
+
+	for rows.Next() {
+		var sigTuple SignatureTuple
+		err := rows.Scan(
+			&sigTuple.Signature, &sigTuple.Operator,
+		)
+		if err != nil {
+			return nil, err
+		}
+		signatures = append(signatures, sigTuple)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return signatures, nil
 }
 
-func fetchSignedTasks() []skateappMemcache.Message {
+func fetchSignedTasks() []disk.SignedTask {
 	storedTasks, _ := disk.RetrieveSignedTasks()
-	tasks := make([]skateappMemcache.Message, len(storedTasks))
-	for i, stask := range storedTasks {
-		tasks[i] = skateappMemcache.Message{
-			TaskId:    stask.TaskId,
-			ChainId:   stask.ChainId,
-			ChainType: pb.ChainType_EVM,
-			Message:   stask.Message,
-			Initiator: stask.Initiator,
-		}
-	}
-
-	return tasks
+	return storedTasks
 }

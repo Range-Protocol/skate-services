@@ -36,29 +36,28 @@ type SignedTask struct {
 	Initiator string
 	ChainType uint32
 	ChainId   uint32
-	Hash      string
+	Hash      [32]byte
 	Operator  string
-	Signature string
+	Signature [65]byte
 }
 
 func InitializeSkateApp() {
-	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ? (
+	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ` + SignedTaskSchema + ` (
 		id           INTEGER PRIMARY KEY AUTOINCREMENT,
-	  taskId       TEXT,
+	  taskId       INTEGER,
 	  message      TEXT,
 	  initiator    TEXT,
 	  chainId      INTEGER,
-	  chainType    TEXT,
-	  hash         TEXT,
+	  chainType    INTEGER,
+	  hash         BLOB,
 	  operator     TEXT,
-	  signature    TEXT
-	)`, SignedTaskSchema)
+	  signature    BLOB
+	)`)
 }
 
 func InsertSignedTask(signedTask SignedTask) error {
 	_, err := SkateAppDB.Exec(
-		"INSERT INTO ? (taskId, message, initiator, chainId, chainType, hash, operator, signature) VALUES (?,?,?,?,?,?,?,?)",
-		SignedTaskSchema,
+		"INSERT INTO "+SignedTaskSchema+" (taskId, message, initiator, chainId, chainType, hash, operator, signature) VALUES (?,?,?,?,?,?,?,?)",
 		signedTask.TaskId, signedTask.Message, signedTask.Initiator, signedTask.ChainId,
 		signedTask.ChainType, signedTask.Hash, signedTask.Operator, signedTask.Signature,
 	)
@@ -70,7 +69,7 @@ func InsertSignedTask(signedTask SignedTask) error {
 }
 
 func RetrieveSignedTasks() ([]SignedTask, error) {
-	rows, err := SkateAppDB.Query("SELECT * FROM ?", SignedTaskSchema)
+	rows, err := SkateAppDB.Query("SELECT * FROM " + SignedTaskSchema)
 	if err != nil {
 		TaskLogger.Error("SelectAllTasks failed", "err", err)
 		return nil, err
