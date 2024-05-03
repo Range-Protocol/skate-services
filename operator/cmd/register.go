@@ -39,9 +39,8 @@ func registerCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register",
 		Short: "Register an operator with the Skate AVS",
-		Long: `Register command expects a Eigen-Layer yaml config file as an argument to 
-    successfully register an operator address with the Skate AVS. 
-    Note the operator must already be registered with Eigen-Layer.`,
+		Long: `Register command expects a Eigen-Layer yaml config file as an argument.
+    Note that the operator must already be registered with Eigen-Layer.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger.Info("Registering operator to Skate AVS ...")
@@ -65,7 +64,6 @@ func bindRegisterConfig(cobraCmd *cobra.Command, cfg *RegisterConfig) {
 	_ = cobraCmd.MarkFlagRequired(flagConfig)
 }
 
-
 // readConfig returns the eigen-layer operator configuration from the given file.
 func readConfig(file string) (elCliTypes.OperatorConfigNew, error) {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
@@ -84,4 +82,3 @@ func readConfig(file string) (elCliTypes.OperatorConfigNew, error) {
 
 	return config, nil
 }
-

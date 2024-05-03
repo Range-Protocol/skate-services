@@ -12,11 +12,16 @@ import (
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 )
 
+type (
+	PrivateKey = ecdsa.PrivateKey
+	PublicKey  = ecdsa.PublicKey
+)
+
 // Sign returns a signature from input data.
 //
 // Follow EVM standard: [R (32b) || S (32b) || V (1b)] and (V={27, 28}).
 // NOTE: digestHash must be 32 bytes
-func Sign(digestHash []byte, key *ecdsa.PrivateKey) ([65]byte, error) {
+func Sign(digestHash []byte, key *PrivateKey) ([65]byte, error) {
 	sig, err := ethcrypto.Sign(digestHash[:], key)
 	if err != nil {
 		return [65]byte(sig), err
@@ -28,7 +33,7 @@ func Sign(digestHash []byte, key *ecdsa.PrivateKey) ([65]byte, error) {
 
 // Recover the public key that sign a given hash
 //
-// NOTE: Equivalent to Openzeppelin's ECDSA.recover function: 
+// NOTE: Equivalent to Openzeppelin's ECDSA.recover function:
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/ECDSA.sol
 //
 // NOTE: digestHash must be 32 bytes
@@ -47,6 +52,10 @@ func EcRecover(digestHash []byte, sig [65]byte) (common.Address, error) {
 	return ethcrypto.PubkeyToAddress(*pubkey), nil
 }
 
+func PubKeytoAddress(pubKey ecdsa.PublicKey) common.Address {
+	return ethcrypto.PubkeyToAddress(pubKey)
+}
+
 // Verify ethereum signed message
 // NOTE: digestHash must be 32 bytes
 func Verify(address common.Address, digestHash []byte, sig [65]byte) (bool, error) {
@@ -55,8 +64,8 @@ func Verify(address common.Address, digestHash []byte, sig [65]byte) (bool, erro
 	return actual == address, err
 }
 
-func PubkeyToAddress(publicKey ecdsa.PublicKey) common.Address {
-  return ethcrypto.PubkeyToAddress(publicKey)
+func PubkeyToAddress(publicKey PublicKey) common.Address {
+	return ethcrypto.PubkeyToAddress(publicKey)
 }
 
 func Keccak256(data ...[]byte) []byte {
@@ -67,6 +76,6 @@ func S256() elliptic.Curve {
 	return secp256k1.S256()
 }
 
-func KeyGen(curve elliptic.Curve, rand io.Reader) (*ecdsa.PrivateKey, error) {
+func KeyGen(curve elliptic.Curve, rand io.Reader) (*PrivateKey, error) {
 	return ecdsa.GenerateKey(curve, rand)
 }

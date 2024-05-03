@@ -11,6 +11,7 @@ import (
 	"skatechain.org/lib/on-chain/avs"
 	"skatechain.org/lib/on-chain/backend"
 	avsMemcache "skatechain.org/relayer/db/avs/mem"
+	"skatechain.org/relayer/db/skateapp/disk"
 	skateappMemcache "skatechain.org/relayer/db/skateapp/mem"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -35,11 +36,13 @@ func PublishTaskToAVS(ctx context.Context) {
 	defer ticker.Stop()
 	relayerLogger.Info("Start AVS publisher process...")
 
-	var cachedTasks []skateappMemcache.Message
-  relayerAddress := ctx.Value("addres").(common.Address)
-  passphrase := ctx.Value("passphrase").(string)
+  cachedTasks := make([]skateappMemcache.Message, 0)
+
+	relayerAddress := ctx.Value("address").(common.Address)
+	passphrase := ctx.Value("passphrase").(string)
 
 	// step 1: populate cachedTask with non-completed tasks in the db
+  disk.SkateApp_RetriveSignedTasks("SELECT * FROM ?", disk.SignedTaskSchema)
 
 	for {
 		select {
@@ -68,7 +71,7 @@ func PublishTaskToAVS(ctx context.Context) {
 
 					// Create a transactor to submit on-chain
 					chainId := new(big.Int).SetUint64(uint64(task.ChainId))
-					txOptsWithSigner, _ := backend.LoadTransactorFromKeystore(relayerAddress, passphrase, chainId)
+					txOptsWithSigner, _ := backend.TransactorFromKeystore(relayerAddress, passphrase, chainId)
 					tx, err := holeskyAvsContract.BindingISkateAVSTransactor.SubmitData(
 						txOptsWithSigner,
 						taskId,

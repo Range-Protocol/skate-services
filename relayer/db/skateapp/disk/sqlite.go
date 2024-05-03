@@ -12,9 +12,12 @@ import (
 )
 
 var (
-	TaskLogger       = db.NewFileLogger(config.DbDir, "skateapp_tasks.log")
-	SkateAppDB       *sql.DB
-	SignedTaskSchema = "SignedTask"
+	TaskLogger = db.NewFileLogger(config.DbDir, "skateapp_tasks.log")
+	SkateAppDB *sql.DB
+)
+
+const (
+	SignedTaskSchema = "SignedTasks"
 )
 
 func init() {

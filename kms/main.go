@@ -1,28 +1,25 @@
 package main
 
-// NOTE:
+// NOTE: 
 import (
 	"context"
-
 	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/logging"
-	clicmd "skatechain.org/relayer/cmd"
+	clicmd "skatechain.org/kms/cmd"
 
 	figure "github.com/common-nighthawk/go-figure"
-	"github.com/spf13/viper"
 )
 
 func main() {
 	cmd := clicmd.New()
 
-	fig := figure.NewFigure("Skate RELAYER", "", true)
+	fig := figure.NewFigure("Key Stonk", "", true)
 	cmd.SetHelpTemplate(fig.String() + "\n" + cmd.HelpTemplate())
 
 	libcmd.SilenceErrUsage(cmd)
 
 	// Create a new Logger instance
 	logger := logging.NewLoggerWithConsoleWriter()
-  logger.Info(viper.GetString("skate_app"))
 
 	err := cmd.ExecuteContext(context.Background())
 	if err != nil {

@@ -2,7 +2,6 @@ package monitor
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,7 +12,9 @@ import (
 	pb "skatechain.org/api/pb/relayer"
 
 	bindingSkateApp "skatechain.org/contracts/bindings/SkateApp"
+	"skatechain.org/lib/crypto/ecdsa"
 	"skatechain.org/lib/monitor"
+	"skatechain.org/lib/on-chain/avs"
 	"skatechain.org/lib/on-chain/backend"
 	operatorDb "skatechain.org/operator/db"
 )
@@ -43,27 +44,35 @@ func SubscribeSkateApp(addr common.Address, backend backend.Backend, ctx context
 		return err
 	}
 
+	opPrivateKey := ctx.Value("privateKey").(*ecdsa.PrivateKey)
+
+	if opPrivateKey == nil {
+		monitor.Logger.Info("No private key provided, run with watch-only mode")
+	}
+
 	// Event handler
 	go func() {
 		for {
 			select {
-			case event, ok := <-sink:
+			case task, ok := <-sink:
 				if !ok {
-					return
+					monitor.Logger.Error("Sink error, go-eth related")
+          return
 				}
 				if monitor.Verbose {
-					monitor.Logger.Info("Received TaskCreated event:", "task", event)
+					monitor.Logger.Info("Received TaskCreated event:", "task", task)
 				}
-				err = PostProcessLog(event)
-				if err != nil && monitor.Verbose {
-					monitor.Logger.Error("Postprocess task error", "error", err)
+				if opPrivateKey != nil {
+					err = PostProcessLog(opPrivateKey, task)
+					if err != nil && monitor.Verbose {
+						monitor.Logger.Error("Sign and publish error", "error", err)
+					}
 				}
-				// TODO: Operator sign the task and publish to our relayer node
 			case err := <-watcher.Err():
 				if err != nil && monitor.Verbose {
 					monitor.Logger.Error("Watcher received error: ", "error", err)
 				}
-				return
+        return
 			}
 		}
 	}()
@@ -71,6 +80,82 @@ func SubscribeSkateApp(addr common.Address, backend backend.Backend, ctx context
 	// Wait for the watcher to be closed or an error to occur
 	<-watcher.Err()
 	return nil
+}
+
+func PostProcessLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
+	err := dumpLog(bindingTask)
+	if err != nil {
+		return err
+	}
+	err = signAndBroadcastLog(privateKey, bindingTask)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
+	// Step 1: sign the log
+	digestHash := avs.TaskDigest(
+		uint32(bindingTask.TaskId.Int64()), bindingTask.Message, bindingTask.Signer.Hex(),
+		pb.ChainType_EVM, bindingTask.Chain,
+	)
+	signature, err := ecdsa.Sign(digestHash, privateKey)
+	if err != nil {
+	}
+
+	// Step 2: broad cast log over grpc server
+	conn, err := grpc.Dial(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	if err != nil {
+		if monitor.Verbose {
+			monitor.Logger.Fatal("Relayer server not found", "error", err)
+		}
+		return err
+	}
+	defer conn.Close()
+	c := pb.NewSubmissionClient(conn)
+
+	// Contact the server and print out its response.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	// Create a new Task
+	task := &pb.Task{
+		TaskId:    uint32(bindingTask.TaskId.Uint64()),
+		Msg:       bindingTask.Message,
+		ChainId:   bindingTask.Chain,
+		Initiator: bindingTask.Signer.Hex(),
+	}
+
+	opAddr := ecdsa.PubkeyToAddress(privateKey.PublicKey).Hex()
+	// Create a new SignedMessage
+	signedMessage := &pbCommon.OperatorSignature{
+		Signature: signature[:],
+		Address:   opAddr,
+	}
+
+	// Create a new TaskSubmitRequest
+	request := &pb.TaskSubmitRequest{
+		Task:      task,
+		Signature: signedMessage,
+	}
+
+	r, err := c.SubmitTask(ctx, request)
+	if err != nil {
+		if monitor.Verbose {
+			monitor.Logger.Fatal("Could not submit task", "error", err)
+		}
+		return err
+	}
+
+	if monitor.Verbose {
+		monitor.Logger.Info("Response: %s", r.Result.String())
+	}
+	return nil
+}
+
+func dumpLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
+	return operatorDb.SkateApp_InsertTask(bindingTask)
 }
 
 // NOTE: work over both https and wss, polling every 2 seconds by default
@@ -149,69 +234,4 @@ func PollSkateApp(addr common.Address, backend backend.Backend, ctx context.Cont
 	// Keep the function alive until the context is cancelled
 	<-ctx.Done()
 	return nil
-}
-
-func PostProcessLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
-	err := dumpLog(bindingTask)
-	if err != nil {
-		return err
-	}
-	err = signAndBroadcastLog(bindingTask)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func signAndBroadcastLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
-	// Step 1: sign the log
-	// TODO:
-
-	// Step 2: broad cast log over grpc server
-	conn, err := grpc.Dial(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
-	if err != nil {
-		log.Fatalf("did not connect: %s", err)
-		return err
-	}
-	defer conn.Close()
-	c := pb.NewSubmissionClient(conn)
-
-	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	signature := []byte("example_signature") // Example binary signature data
-
-	// Create a new Task
-	task := &pb.Task{
-		TaskId:    uint32(bindingTask.TaskId.Uint64()),
-		Msg:       bindingTask.Message,
-		ChainId:   bindingTask.Chain,
-		Initiator: bindingTask.Signer.Hex(),
-	}
-
-	// Create a new SignedMessage
-	signedMessage := &pbCommon.OperatorSignature{
-		Signature: signature,
-		// TODO: operator address
-	}
-
-	// Create a new TaskSubmitRequest
-	request := &pb.TaskSubmitRequest{
-		Task:      task,
-		Signature: signedMessage,
-	}
-
-	r, err := c.SubmitTask(ctx, request)
-	if err != nil {
-		log.Fatalf("could not submit task: %v", err)
-		return err
-	}
-
-	log.Printf("Response: %s", r.Result.String())
-	return nil
-}
-
-func dumpLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
-	return operatorDb.SkateApp_InsertTask(bindingTask)
 }

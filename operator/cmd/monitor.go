@@ -6,6 +6,7 @@ import (
 	"skatechain.org/lib/logging"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -26,13 +27,15 @@ func monitorSkateAppCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger.Info("listening to Skate App request...")
-			startMonitor()
+			nollie_rpc := viper.GetString("holesky_wss_rpc")
+			skateapp_addr := viper.GetString("skate_app")
+			startMonitor(nollie_rpc, skateapp_addr)
 
 			return nil
 		},
 	}
 
-  verbose := true
+	verbose := true
 	libcmd.BindVerbose(cmd, &verbose)
 	if !verbose {
 		monitor.Verbose = false
@@ -42,12 +45,12 @@ func monitorSkateAppCmd() *cobra.Command {
 }
 
 // TODO: bind with config files
-func startMonitor() {
+func startMonitor(rpc string, skateapp string) {
 	nollie := network.ChainID(5051)
-	nollie_backend0, _ := backend.NewBackend("wss://nollie-rpc.skatechain.org/socket")
-	nollie_SkateApp := common.HexToAddress("0x2968C1663B41Cc633540148c679f43136a4644Fc")
+	nollie_backend0, _ := backend.NewBackend(rpc)
+	nollie_SkateApp := common.HexToAddress(skateapp)
 
-  db.InitializeSkateApp()
+	db.InitializeSkateApp()
 
 	contractAddrs := map[network.ChainID]common.Address{
 		nollie: nollie_SkateApp,

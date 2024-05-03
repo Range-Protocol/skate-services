@@ -4,29 +4,21 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
-const homeFlag = "home"
-
-// BindHomeFlag binds the home flag to the given flag set.
-// This is generally only required for apps that require multiple config files or persist data to disk.
-// Using this flag will result in the viper config directory to be updated from default "." to "<home>/config".
-func BindHomeFlag(flags *pflag.FlagSet, homeDir *string) {
-	flags.StringVar(homeDir, homeFlag, *homeDir, "The application home directory containing config and data")
-}
-
-func Redact(flag string) string {
-	if strings.Contains(flag, "token") ||
-		strings.Contains(flag, "password") ||
-		strings.Contains(flag, "secret") ||
-		strings.Contains(flag, "db") ||
-		strings.Contains(flag, "header") ||
-		strings.Contains(flag, "key") {
+// NOTE: Redact sensitive log, e.g. authorization header, password, ...
+// To be used in the futures
+func Redact(input string) string {
+	if strings.Contains(input, "token") ||
+		strings.Contains(input, "password") ||
+		strings.Contains(input, "secret") ||
+		strings.Contains(input, "db") ||
+		strings.Contains(input, "header") ||
+		strings.Contains(input, "key") {
 		return "█████"
 	}
 
-	return flag
+	return input
 }
 
 // custom AVS addr, else default

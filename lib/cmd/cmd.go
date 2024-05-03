@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -65,24 +64,17 @@ func SilenceErrUsage(cmd *cobra.Command) {
 func initializeConfig(appName string, cmd *cobra.Command) error {
 	v := viper.New()
 
-	v.SetConfigName(appName)
+	// Set up the configuration file path
+	v.SetConfigFile("configs/testnet.yaml")
 
-	// Set config path to <home>/config/ if --home flag is used in this app.
-	if home := cmd.Flag(homeFlag); home != nil {
-		v.AddConfigPath(filepath.Join(home.Value.String(), "config"))
-	} else {
-		// Otherwise, set config path to current directory
-		v.AddConfigPath(".")
-	}
-
-	// Attempt to read the config file, gracefully ignoring errors
-	// caused by a config file not being found. Return an error
-	// if we cannot parse the config file.
+  x := v.GetString("skate_app")
+  print(x)
+	// Attempt to read the config file
 	if err := v.ReadInConfig(); err != nil {
-		// It's okay if there isn't a config file
-		var cfgError viper.ConfigFileNotFoundError
-		if ok := errors.As(err, &cfgError); !ok {
-			return errors.Wrap(err, "read config")
+		// Handle error if the config file cannot be read
+    print("READ FILE ERROR")
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return errors.Wrap(err, "read config file")
 		}
 	}
 
@@ -107,7 +99,7 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) error {
 		// Define all the viper flag names to check
 		viperNames := []string{
 			f.Name,
-			strings.Replace(f.Name, "-", ".", 1), // Support 1 tier of TOML groups using first term before "-".
+			strings.Replace(f.Name, "-", ".", 1),
 		}
 
 		for _, name := range viperNames {

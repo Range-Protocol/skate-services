@@ -13,10 +13,11 @@ holesky_wss_rpc: wss://holesky.drpc.org
 # Other chain RPCs
 # ARbitrum, mantle, ...
 
+# Process (relayer/operator) signer address
+signer: 0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071
+
 # Strategies
 wsETH_strategy: 0x7D704507b76571a51d9caE8AdDAbBFd0ba0e63d3
-
-keystore_path: keystore/
 
 # avs node spec compliance https://eigen.nethermind.io/docs/spec/intro
 eigen_metrics_ip_port_address: localhost:9090

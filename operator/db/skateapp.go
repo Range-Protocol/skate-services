@@ -10,7 +10,11 @@ import (
 	"skatechain.org/lib/db"
 )
 
-var TaskLogger = db.NewFileLogger(DbDir, "skateapp_tasks.log")
+var (
+	TaskLogger = db.NewFileLogger(DbDir, "skateapp_tasks.log")
+)
+
+const TaskSchema = "Tasks"
 
 type Task struct {
 	Id      int64
@@ -21,14 +25,14 @@ type Task struct {
 }
 
 func InitializeSkateApp() {
-	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS skateapp_tasks (
+	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ? (
 		id       INTEGER PRIMARY KEY AUTOINCREMENT,
 	  taskId   TEXT,
 	  message  TEXT,
 	  signer   TEXT,
 	  chainId  INTEGER,
 	  hash     TEXT
-	)`)
+	)`, TaskSchema)
 }
 
 type bindingTask = bindingSkateApp.BindingSkateAppTaskCreated
@@ -60,7 +64,8 @@ func task_bindingToDb(task *bindingSkateApp.BindingSkateAppTaskCreated) *Task {
 func SkateApp_InsertTask(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
 	task := task_bindingToDb(bindingTask)
 	_, err := SkateAppDB.Exec(
-		"INSERT INTO skateapp_tasks (taskId, message, signer, chainId, hash) VALUES (?, ?, ?, ?, ?)",
+		"INSERT INTO ? (taskId, message, signer, chainId, hash) VALUES (?, ?, ?, ?, ?)",
+    TaskSchema,
 		task.Id, task.Message, task.Signer, task.Chain, task.Hash,
 	)
 	if err != nil {

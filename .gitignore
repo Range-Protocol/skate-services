@@ -34,4 +34,4 @@ id_rsa
 .avs
 
 data
-keys/
+keystore/
