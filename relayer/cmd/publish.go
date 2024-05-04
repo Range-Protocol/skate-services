@@ -33,7 +33,7 @@ func publishCmd() *cobra.Command {
 			}
 
 			ctx := context.WithValue(context.Background(), "config", config)
-			publish.PublishTaskToAVS(ctx)
+			publish.PublishTaskToAVSAndGateway(ctx)
 
 			return nil
 		},

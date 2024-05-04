@@ -13,8 +13,8 @@ import (
 	"skatechain.org/lib/monitor"
 	"skatechain.org/lib/on-chain/backend"
 	"skatechain.org/lib/on-chain/network"
-	"skatechain.org/operator/db"
-	oMonitor "skatechain.org/operator/monitor"
+	skateappDb "skatechain.org/operator/db/skateapp/disk"
+	operatorMonitor "skatechain.org/operator/monitor"
 )
 
 // TODO: decouple monitor from signing service
@@ -85,7 +85,7 @@ func startMonitor(ctx context.Context) {
 	nollie_backend0, _ := backend.NewBackend(env.SkateWSSRPC)
 	nollie_SkateApp := common.HexToAddress(env.SkateApp)
 
-	db.InitializeSkateApp()
+	skateappDb.InitializeSkateApp()
 
 	contractAddrs := map[network.ChainID]common.Address{
 		nollie: nollie_SkateApp,
@@ -100,5 +100,5 @@ func startMonitor(ctx context.Context) {
 	}
 
 	monitor := monitor.NewMonitor(ctxs, contractAddrs, backends)
-	monitor.Start(oMonitor.SubscribeSkateApp)
+	monitor.Start(operatorMonitor.SubscribeSkateApp)
 }

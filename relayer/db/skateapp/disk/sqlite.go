@@ -18,6 +18,7 @@ var (
 
 const (
 	SignedTaskSchema = "SignedTasks"
+	CompletedTaskSchema = "CompletedTasks"
 )
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 		panic("Relayer DB initialization failed")
 	}
 	SkateAppDB = db
+  InitializeSkateApp()
 }
 
 type SignedTask struct {
@@ -36,9 +38,15 @@ type SignedTask struct {
 	Initiator string
 	ChainType uint32
 	ChainId   uint32
-	Hash      [32]byte
+	Hash      []byte
 	Operator  string
-	Signature [65]byte
+	Signature []byte
+}
+
+type CompletedTask struct {
+	TaskId    uint32
+	ChainType uint32
+	ChainId   uint32
 }
 
 func InitializeSkateApp() {
@@ -52,6 +60,13 @@ func InitializeSkateApp() {
 	  hash         BLOB,
 	  operator     TEXT,
 	  signature    BLOB
+	)`)
+
+	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ` + CompletedTaskSchema + ` (
+		id           INTEGER PRIMARY KEY AUTOINCREMENT,
+	  taskId       INTEGER,
+	  chainId      INTEGER,
+	  chainType    INTEGER
 	)`)
 }
 

@@ -2,6 +2,7 @@ package retrieve
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
@@ -9,8 +10,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"skatechain.org/api"
 	pb "skatechain.org/api/pb/relayer"
 	bindingISkateAVS "skatechain.org/contracts/bindings/ISkateAVS"
+	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/crypto/ecdsa"
 	"skatechain.org/lib/logging"
 	"skatechain.org/lib/on-chain/avs"
@@ -27,11 +30,7 @@ var (
 	operatorCache = avsMemcache.NewCache(2 * 1024 * 1024)        // 2MB
 
 	// NOTE: change with config files
-	holeskyBackend, _     = backend.NewBackend("https://holesky.drpc.org")
-	holeskyAvsContract, _ = bindingISkateAVS.NewBindingISkateAVS(
-		common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071"), holeskyBackend,
-	)
-	holeskyStrategy = common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071")
+	// holeskyStrategy = common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071")
 )
 
 type submissionServer struct {
@@ -47,7 +46,9 @@ func NewSubmissionServer(ctx context.Context) *submissionServer {
 
 func (s *submissionServer) Start() {
 	grpc_server := grpc.NewServer()
-	pb.RegisterSubmissionServer(grpc_server, &submissionServer{})
+	relayerLogger.Info("Starting with ...", "context", s.ctx.Value("config"))
+
+	pb.RegisterSubmissionServer(grpc_server, s)
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -58,28 +59,33 @@ func (s *submissionServer) Start() {
 	}
 }
 
-func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequest) (*pb.TaskSubmitReply, error) {
+func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitRequest) (*pb.TaskSubmitReply, error) {
+	config := s.ctx.Value("config").(*libcmd.EnvironmentConfig)
 	if Verbose {
 		relayerLogger.Info("Got request", "payload", in)
 	}
 
-	invalidReply := &pb.TaskSubmitReply{
-		Result: pb.TaskStatus_REJECTED,
-	}
-
 	// Step 1: Verify the operator
-	isValidOperator, err := isOperator(in.Signature.Address)
+	be, _ := backend.NewBackend(config.HoleskyHTTPRPC)
+	avsContract, _ := bindingISkateAVS.NewBindingISkateAVS(
+		common.HexToAddress(config.SkateAVS), be,
+	)
+	isValidOperator, err := isOperator(avsContract, in.Signature.Address)
 	if err != nil {
 		if Verbose {
 			relayerLogger.Error("Validator address format error", "error", err)
 		}
-		return invalidReply, err
+		return &pb.TaskSubmitReply{
+      Result: pb.TaskStatus_REJECTED,
+    }, api.NewInvalidArgError("signer address format error")
 	}
 	if !isValidOperator {
 		if Verbose {
-			relayerLogger.Error("Not an operator", "error", err)
+			relayerLogger.Error("Not an operator", "address", in.Signature.Address)
 		}
-		return invalidReply, err
+		return &pb.TaskSubmitReply{
+      Result: pb.TaskStatus_REJECTED,
+    }, api.NewInvalidArgError(fmt.Sprintf("%s is not a Skate AVS operator", in.Signature.Address))
 	}
 
 	// Step 2: Verify signature
@@ -94,7 +100,9 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 		if Verbose {
 			relayerLogger.Error("Signature format error", "error", err)
 		}
-		return invalidReply, err
+		return &pb.TaskSubmitReply{
+			Result: pb.TaskStatus_REJECTED,
+    }, api.NewInvalidArgError("Signature format error, must be 65 bytes")
 	}
 	if !valid {
 		if Verbose {
@@ -102,13 +110,13 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 				"operator", in.Signature.Address,
 				"signature", signature,
 				"TaskId", in.Task.TaskId,
-				"Message", in.Task.Msg,
-				"Initiator", in.Task.Initiator,
 				"ChainType", in.Task.ChainType,
 				"ChainId", in.Task.ChainId,
 			)
 		}
-		return invalidReply, nil
+		return &pb.TaskSubmitReply{
+			Result: pb.TaskStatus_REJECTED,
+    }, api.NewInvalidArgError("Invalid signature")
 	}
 
 	// Step 3: Update the db and push to memcache
@@ -134,16 +142,16 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 		Initiator: in.Task.Initiator,
 		ChainId:   in.Task.ChainId,
 		ChainType: uint32(in.Task.ChainType),
-		Hash:      [32]byte(in.Task.Hash),
+		Hash:      in.Task.Hash,
 		Operator:  in.Signature.Address,
-		Signature: [65]byte(in.Signature.Signature),
+		Signature: in.Signature.Signature,
 	}
 	err = skateappDb.InsertSignedTask(signedTask)
 	if err != nil && Verbose {
 		relayerLogger.Error("Insert signed task to db failed", "error", err)
 		return &pb.TaskSubmitReply{
 			Result: pb.TaskStatus_REJECTED,
-		}, errors.New("Relayer error, processor not responding")
+    }, api.NewInternalError("Server can't securely store signed task object")
 	}
 
 	return &pb.TaskSubmitReply{
@@ -154,7 +162,7 @@ func (s *submissionServer) SubmitTask(ctx context.Context, in *pb.TaskSubmitRequ
 // NOTE: Right now we control the operators list,
 // therefore cache revalidation period is set to INF (no expiration).
 // Might need to change in the future.
-func isOperator(address string) (bool, error) {
+func isOperator(avsContract *bindingISkateAVS.BindingISkateAVS, address string) (bool, error) {
 	// step 1: look up cache
 	cachedOperator, _ := operatorCache.GetOperator(address)
 	if cachedOperator != nil {
@@ -162,7 +170,7 @@ func isOperator(address string) (bool, error) {
 	}
 
 	// step 2: populate cache with on-chain data
-	operators, err := holeskyAvsContract.Operators(&bind.CallOpts{})
+	operators, err := avsContract.Operators(&bind.CallOpts{})
 	if err != nil {
 		return false, errors.Wrap(err, "isOperator.Operators")
 	}

@@ -15,7 +15,7 @@ import (
 	"skatechain.org/relayer/db/skateapp/disk"
 )
 
-func PublishTaskToAVS(ctx context.Context) {
+func PublishTaskToAVSAndGateway(ctx context.Context) {
 	ticker := time.NewTicker(12 * time.Second)
 	defer ticker.Stop()
 	relayerLogger.Info("Start AVS publisher process...")
@@ -43,7 +43,10 @@ func PublishTaskToAVS(ctx context.Context) {
 			relayerLogger.Info("AVS publish process stopped!")
 			return
 		case <-ticker.C:
-			tasks := fetchSignedTasks()
+			tasks := fetchPendingTasks()
+      batchTaskId := make([]*big.Int, 0)
+      batchMessageData := make([][]byte, 0)
+      batchSignatures := make([][]bindingISkateAVS.ISkateAVSSignatureTuple, 0)
 			for _, task := range tasks {
 				// NOTE: use memcache in future versions
 				signatures, _ := fetchSignaturesForTask(task)
@@ -55,30 +58,34 @@ func PublishTaskToAVS(ctx context.Context) {
 					taskId := new(big.Int).SetUint64(uint64(task.TaskId))
 					messageData := avs.TaskData(task.Message, task.Initiator, pb.ChainType_EVM, task.ChainId)
 
-					// Create a transactor to submit on-chain
-					chainId := new(big.Int).SetUint64(uint64(task.ChainId))
-					txOptsWithSigner, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
-					tx, err := holeskyAvsContract.BindingISkateAVSTransactor.SubmitData(
-						txOptsWithSigner,
-						taskId,
-						messageData,
-						signatures,
-					)
-					if err != nil {
-						relayerLogger.Error("Failed to submit transaction", "error", err)
-						continue
-					}
-					relayerLogger.Info("Transaction sent", "txHash", tx.Hash().Hex())
+          batchTaskId = append(batchTaskId, taskId)
+          batchMessageData = append(batchMessageData, messageData)
 
-					// Collect the transaction receipt
-					receipt, err := holeskyBackend.TransactionReceipt(ctx, tx.Hash())
-					if err != nil {
-						relayerLogger.Error("Failed to get transaction receipt", "error", err)
-						continue
-					}
-					relayerLogger.Info("Transaction receipt", "status", receipt.Status)
+					// Create a transactor to submit on-chain
 				}
 			}
+
+			chainId := new(big.Int).SetUint64(config.ChainId)
+			txOptsWithSigner, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
+			tx, err := holeskyAvsContract.BindingISkateAVSTransactor.BatchSubmitData(
+				txOptsWithSigner,
+				batchTaskId,
+				batchMessageData,
+				batchSignatures,
+			)
+			if err != nil {
+				relayerLogger.Error("Failed to submit transaction", "error", err)
+				continue
+			}
+			relayerLogger.Info("Transaction sent", "txHash", tx.Hash().Hex())
+
+			// Collect the transaction receipt
+			receipt, err := holeskyBackend.TransactionReceipt(ctx, tx.Hash())
+			if err != nil {
+				relayerLogger.Error("Failed to get transaction receipt", "error", err)
+				continue
+			}
+			relayerLogger.Info("Transaction receipt", "status", receipt.Status)
 		}
 	}
 }
@@ -120,7 +127,7 @@ func fetchSignaturesForTask(task disk.SignedTask) ([]SignatureTuple, error) {
 	return signatures, nil
 }
 
-func fetchSignedTasks() []disk.SignedTask {
+func fetchPendingTasks() []disk.SignedTask {
 	storedTasks, _ := disk.RetrieveSignedTasks()
 	return storedTasks
 }

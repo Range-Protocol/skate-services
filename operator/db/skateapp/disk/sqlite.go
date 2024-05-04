@@ -1,15 +1,33 @@
-package db
+package disk
 
 import (
 	// "encoding/hex"
 	"math/big"
+	"database/sql"
+	"path/filepath"
+
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/ethereum/go-ethereum/common"
 	"skatechain.org/contracts/bindings/SkateApp"
 	"skatechain.org/lib/db"
+	config "skatechain.org/operator/db"
 )
 
-var TaskLogger = db.NewFileLogger(DbDir, "skateapp_tasks.log")
+var (
+	SkateAppDB *sql.DB
+	TaskLogger = db.NewFileLogger(config.DbDir, "skateapp_tasks.log")
+)
+
+func init() {
+	db, err := sql.Open("sqlite3", filepath.Join(config.DbDir, "skateapp.db"))
+	if err != nil {
+		panic("Relayer DB initialization failed")
+	}
+	SkateAppDB = db
+	InitializeSkateApp()
+}
+
 
 const TaskSchema = "Tasks"
 
@@ -18,7 +36,7 @@ type Task struct {
 	Message string
 	Chain   uint32
 	Signer  string
-	Hash    [32]byte
+	Hash    []byte
 }
 
 func InitializeSkateApp() {
@@ -28,7 +46,7 @@ func InitializeSkateApp() {
 	  message  TEXT,
 	  signer   TEXT,
 	  chainId  INTEGER,
-	  hash     TEXT
+	  hash     BLOB
 	)`)
 }
 
@@ -39,7 +57,7 @@ func task_dbToBinding(task *Task) *bindingTask {
 		TaskId:   big.NewInt(task.Id),
 		Message:  task.Message,
 		Signer:   common.HexToAddress(task.Signer),
-		TaskHash: task.Hash,
+		TaskHash: [32]byte(task.Hash),
 		Chain:    task.Chain,
 	}
 }
@@ -49,7 +67,7 @@ func task_bindingToDb(task *bindingSkateApp.BindingSkateAppTaskCreated) *Task {
 		Id:      task.TaskId.Int64(),
 		Message: task.Message,
 		Signer:  task.Signer.Hex(),
-		Hash:    task.TaskHash,
+		Hash:    task.TaskHash[:],
 		Chain:   task.Chain,
 	}
 }

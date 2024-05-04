@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	pbCommon "skatechain.org/api/pb/common"
@@ -17,7 +18,7 @@ import (
 	"skatechain.org/lib/monitor"
 	"skatechain.org/lib/on-chain/avs"
 	"skatechain.org/lib/on-chain/backend"
-	operatorDb "skatechain.org/operator/db"
+	skateappDb "skatechain.org/operator/db/skateapp/disk"
 )
 
 // WARNING: Must run with wss rpc.
@@ -66,10 +67,7 @@ func SubscribeSkateApp(addr common.Address, be backend.Backend, ctx context.Cont
 				if monitor.Verbose {
 					monitor.Logger.Info("Received TaskCreated event:", "task", task)
 				}
-				err = PostProcessLog(privateKey, task)
-				if err != nil && monitor.Verbose {
-					monitor.Logger.Error("Postprocess log failed", "error", err)
-				}
+				PostProcessLog(privateKey, task)
 			case err := <-watcher.Err():
 				if err != nil && monitor.Verbose {
 					monitor.Logger.Error("Watcher received error: ", "error", err)
@@ -113,12 +111,12 @@ func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkate
 	conn, err := grpc.Dial(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		if monitor.Verbose {
-			monitor.Logger.Fatal("Relayer server not found", "error", err)
+			monitor.Logger.Fatal("Relayer server not found", "error", errors.Wrap(err, "signAndBroadcastLog"))
 		}
 		return err
 	}
 	defer conn.Close()
-	c := pb.NewSubmissionClient(conn)
+	client := pb.NewSubmissionClient(conn)
 
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -145,22 +143,24 @@ func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkate
 		Signature: signedMessage,
 	}
 
-	r, err := c.SubmitTask(ctx, request)
-	if err != nil {
-		if monitor.Verbose {
-			monitor.Logger.Fatal("Could not submit task", "error", err)
-		}
-		return err
+	response, err := client.SubmitTask(ctx, request)
+	if err != nil && monitor.Verbose {
+		monitor.Logger.Error("Could not submit task", "error", err)
 	}
 
 	if monitor.Verbose {
-		monitor.Logger.Info("Response: %s", r.Result.String())
+		monitor.Logger.Info("Response", "result", response)
 	}
-	return nil
+	return err
 }
 
 func dumpLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
-	return operatorDb.SkateApp_InsertTask(bindingTask)
+	err := skateappDb.SkateApp_InsertTask(bindingTask)
+	if err != nil && monitor.Verbose {
+		monitor.Logger.Info("Can't dump task into db", "error", errors.Wrap(err, "dumpLog"))
+	}
+
+	return err
 }
 
 // NOTE: work over both https and wss, polling every 2 seconds by default

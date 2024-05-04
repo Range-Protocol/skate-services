@@ -34,6 +34,7 @@ func retrieveCmd() *cobra.Command {
 
 			ctx := context.WithValue(context.Background(), "config", config)
       s := retrieve.NewSubmissionServer(ctx)
+
       s.Start()
 
 			return nil
