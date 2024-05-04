@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	config, _ := cmd.ReadEnvironmentConfig("testnet")
+	config, _ := cmd.ReadConfig[cmd.EnvironmentConfig]("/environment", "testnet")
 
 	// Access config values
 	log.Printf("Environment: %s", config.Environment)
@@ -19,7 +19,6 @@ func main() {
 	log.Printf("Skate AVS: %s", config.SkateAVS)
 	log.Printf("Holesky HTTP RPC: %s", config.HoleskyHTTPRPC)
 	log.Printf("Holesky WSS RPC: %s", config.HoleskyWSSRPC)
-	log.Printf("Signer: %s", config.Signer)
 	log.Printf("wsETH Strategy: %s", config.WsETHStrategy)
 	log.Printf("Eigen Metrics IP Port: %s", config.EigenMetricsIPPort)
 	log.Printf("Enable Metrics: %t", config.EnableMetrics)
