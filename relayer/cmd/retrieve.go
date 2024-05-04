@@ -1,21 +1,19 @@
 package cmd
 
 import (
-  "context"
+	"context"
+
 	"skatechain.org/lib/logging"
 	"skatechain.org/relayer/retrieve"
 
-	libcmd "skatechain.org/lib/cmd"
 	"github.com/spf13/cobra"
+	libcmd "skatechain.org/lib/cmd"
 )
 
-// TODO: Retrieve signatures from Skate Operator who has signs over the message
 func retrieveCmd() *cobra.Command {
 	logger := logging.NewLoggerWithConsoleWriter()
 
 	var configFile string
-	var overrideSigner string
-	var passphrase string
 
 	cmd := &cobra.Command{
 		Use:   "retrieve",
@@ -26,31 +24,28 @@ func retrieveCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger.Info("Start signature retrieval service ...")
 
-			config, err := libcmd.ReadYAMLConfig(configFile)
+			config, err := libcmd.ReadConfig[libcmd.EnvironmentConfig]("/environment", configFile)
 			if err != nil {
 				logger.Fatalf("Can't load config file at %s, error = %v", configFile, err)
 				return err
 			}
 
 			ctx := context.WithValue(context.Background(), "config", config)
-      s := retrieve.NewSubmissionServer(ctx)
+			s := retrieve.NewSubmissionServer(ctx)
 
-      s.Start()
+			s.Start()
 
 			return nil
 		},
 	}
 
 	libcmd.BindEnvConfig(cmd, &configFile)
-	libcmd.BindSigner(cmd, &overrideSigner)
-	libcmd.BindPassphrase(cmd, &passphrase)
 
 	verbose := true
 	libcmd.BindVerbose(cmd, &verbose)
 	if !verbose {
 		retrieve.Verbose = false
 	}
-
 
 	return cmd
 }

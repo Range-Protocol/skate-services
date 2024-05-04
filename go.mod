@@ -10,7 +10,6 @@ require (
 	github.com/consensys/gnark-crypto v0.12.1
 	github.com/coocood/freecache v1.2.4
 	github.com/ethereum/go-ethereum v1.14.0
-	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0

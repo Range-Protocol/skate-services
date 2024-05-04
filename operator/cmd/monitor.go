@@ -21,7 +21,8 @@ import (
 func monitorSkateAppCmd() *cobra.Command {
 	logger := logging.NewLoggerWithConsoleWriter()
 
-	var configFile string
+	var envConfigFile string
+	var signerConfigFile string
 	var overrideSigner string
 	var passphrase string
 
@@ -32,29 +33,29 @@ func monitorSkateAppCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger.Info("Listening to Skate App request...")
 
-			config, err := libcmd.ReadYAMLConfig(configFile)
+			envConfig, err := libcmd.ReadConfig[libcmd.EnvironmentConfig]("/environment", envConfigFile)
 			if err != nil {
-				logger.Fatalf("Can't load config file at %s, error = %v", configFile, err)
+				logger.Fatalf("Can't load config file at %s, error = %v", envConfigFile, err)
 				return err
 			}
+			ctx := context.WithValue(context.Background(), "config", envConfig)
 
-			ctx := context.WithValue(context.Background(), "config", config)
-			signer := config.Signer
+			signerConfig, err := libcmd.ReadConfig[libcmd.SignerConfig]("/signer/operator", signerConfigFile)
 			if overrideSigner != "" {
-				signer = overrideSigner
+				signerConfig.Address = overrideSigner
 			}
-			signerConfig := &libcmd.SignerConfig{
-				Address:    signer,
-				Passphrase: passphrase,
+			if passphrase != "" {
+				signerConfig.Passphrase = passphrase
 			}
-			if signer == "" {
+
+			if signerConfig.Address == "" {
 				logger.Info("No signer provided, run with read-only mode")
 			} else {
 				ctx = context.WithValue(ctx, "signer", signerConfig)
 
-				_, err := backend.PrivateKeyFromKeystore(common.HexToAddress(signer), passphrase)
+				_, err := backend.PrivateKeyFromKeystore(common.HexToAddress(signerConfig.Address), signerConfig.Passphrase)
 				if err != nil {
-					logger.Fatal("Invalid keystore for signer", "address", signer, "passphrase", passphrase)
+					logger.Fatal("Invalid keystore for signer", signerConfig)
 					return err
 				}
 			}
@@ -65,7 +66,8 @@ func monitorSkateAppCmd() *cobra.Command {
 		},
 	}
 
-	libcmd.BindEnvConfig(cmd, &configFile)
+	libcmd.BindEnvConfig(cmd, &envConfigFile)
+	libcmd.BindSignerConfig(cmd, &signerConfigFile)
 	libcmd.BindSigner(cmd, &overrideSigner)
 	libcmd.BindPassphrase(cmd, &passphrase)
 

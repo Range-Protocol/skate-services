@@ -146,12 +146,13 @@ func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkate
 	response, err := client.SubmitTask(ctx, request)
 	if err != nil && monitor.Verbose {
 		monitor.Logger.Error("Could not submit task", "error", err)
+		return err
 	}
 
 	if monitor.Verbose {
-		monitor.Logger.Info("Response", "result", response)
+		monitor.Logger.Info("Response result", "result", response)
 	}
-	return err
+	return nil
 }
 
 func dumpLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {

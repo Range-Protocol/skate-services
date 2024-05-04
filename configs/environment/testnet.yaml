@@ -16,9 +16,6 @@ holesky_wss_rpc: wss://holesky.drpc.org
 # Other chain RPCs
 # ARbitrum, mantle, ...
 
-# Process (relayer/operator) signer address
-signer: 0x786775c9ecB916bd7f5a59c150491871fCfCEe86
-
 # Strategies
 wsETH_strategy: 0x786775c9ecB916bd7f5a59c150491871fCfCEe86
 

@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	config, _ := cmd.ReadYAMLConfig("testnet")
+	config, _ := cmd.ReadEnvironmentConfig("testnet")
 
 	// Access config values
 	log.Printf("Environment: %s", config.Environment)

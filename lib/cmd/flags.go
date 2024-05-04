@@ -26,9 +26,13 @@ func BindVerbose(cmd *cobra.Command, verbose *bool) {
 	cmd.Flags().BoolVar(verbose, "verbose", *verbose, "Run with verbose logs")
 }
 
-// privateKey as input
+// env config
 func BindEnvConfig(cmd *cobra.Command, filename *string) {
 	cmd.Flags().StringVar(filename, "config", "testnet", "Config file to set up the environment")
+}
+
+func BindSignerConfig(cmd *cobra.Command, filename *string) {
+	cmd.Flags().StringVar(filename, "signer-config", "1", "Config file to load the signer")
 }
 
 // privateKey as input

@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	relayerLogger = logging.NewLoggerWithConsoleWriter()
+	retrieveLogger = logging.NewLoggerWithConsoleWriter()
 	Verbose       = true
 	taskCache     = skateappMemcache.NewCache(100 * 1024 * 1024) // 100MB
 	operatorCache = avsMemcache.NewCache(2 * 1024 * 1024)        // 2MB
@@ -46,14 +46,14 @@ func NewSubmissionServer(ctx context.Context) *submissionServer {
 
 func (s *submissionServer) Start() {
 	grpc_server := grpc.NewServer()
-	relayerLogger.Info("Starting with ...", "context", s.ctx.Value("config"))
+	retrieveLogger.Info("Starting with ...", "context", s.ctx.Value("config"))
 
 	pb.RegisterSubmissionServer(grpc_server, s)
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	relayerLogger.Info("server listening at ", "addr", lis.Addr())
+	retrieveLogger.Info("server listening at ", "addr", lis.Addr())
 	if err := grpc_server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
@@ -62,7 +62,7 @@ func (s *submissionServer) Start() {
 func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitRequest) (*pb.TaskSubmitReply, error) {
 	config := s.ctx.Value("config").(*libcmd.EnvironmentConfig)
 	if Verbose {
-		relayerLogger.Info("Got request", "payload", in)
+		retrieveLogger.Info("Got request", "payload", in)
 	}
 
 	// Step 1: Verify the operator
@@ -73,7 +73,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 	isValidOperator, err := isOperator(avsContract, in.Signature.Address)
 	if err != nil {
 		if Verbose {
-			relayerLogger.Error("Validator address format error", "error", err)
+			retrieveLogger.Error("Validator address format error", "error", err)
 		}
 		return &pb.TaskSubmitReply{
       Result: pb.TaskStatus_REJECTED,
@@ -81,7 +81,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 	}
 	if !isValidOperator {
 		if Verbose {
-			relayerLogger.Error("Not an operator", "address", in.Signature.Address)
+			retrieveLogger.Error("Not an operator", "address", in.Signature.Address)
 		}
 		return &pb.TaskSubmitReply{
       Result: pb.TaskStatus_REJECTED,
@@ -98,7 +98,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 	)
 	if err != nil {
 		if Verbose {
-			relayerLogger.Error("Signature format error", "error", err)
+			retrieveLogger.Error("Signature format error", "error", err)
 		}
 		return &pb.TaskSubmitReply{
 			Result: pb.TaskStatus_REJECTED,
@@ -106,7 +106,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 	}
 	if !valid {
 		if Verbose {
-			relayerLogger.Error("Signature is invalid",
+			retrieveLogger.Error("Signature is invalid",
 				"operator", in.Signature.Address,
 				"signature", signature,
 				"TaskId", in.Task.TaskId,
@@ -148,7 +148,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 	}
 	err = skateappDb.InsertSignedTask(signedTask)
 	if err != nil && Verbose {
-		relayerLogger.Error("Insert signed task to db failed", "error", err)
+		retrieveLogger.Error("Insert signed task to db failed", "error", err)
 		return &pb.TaskSubmitReply{
 			Result: pb.TaskStatus_REJECTED,
     }, api.NewInternalError("Server can't securely store signed task object")

@@ -4,8 +4,10 @@ import (
 	"context"
 
 	"skatechain.org/lib/logging"
+	"skatechain.org/lib/on-chain/backend"
 	"skatechain.org/relayer/publish"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	libcmd "skatechain.org/lib/cmd"
 )
@@ -13,33 +15,53 @@ import (
 func publishCmd() *cobra.Command {
 	logger := logging.NewLoggerWithConsoleWriter()
 
-	var configFile string
+	var envConfigFile string
+	var signerConfigFile string
 	var overrideSigner string
 	var passphrase string
 
 	cmd := &cobra.Command{
-		Use:   "retrieve",
-		Short: "Listen and retrieve task verification signatures from AVS operators",
-		Long: `Only accepts operators who registered with Eigenlayer contracts and the Skate AVS.
-    Status of the request is not available yet`,
+		Use:   "publish",
+		Short: "Publish verified quorums into skate avs and create new message in respective gateway contracts",
+		Long: `Publish verified quorums into skate AVS, then create new message in respective gateway contracts. 
+    Relayer slashing is not yet implemented`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger.Info("Publishing to AVS ...")
 
-			config, err := libcmd.ReadYAMLConfig(configFile)
+			envConfig, err := libcmd.ReadConfig[libcmd.EnvironmentConfig]("/environment", envConfigFile)
 			if err != nil {
-				logger.Fatalf("Can't load config file at %s, error = %v", configFile, err)
+				logger.Fatalf("Can't load config file at %s, error = %v", envConfigFile, err)
+				return err
+			}
+			ctx := context.WithValue(context.Background(), "config", envConfig)
+
+			signerConfig, err := libcmd.ReadConfig[libcmd.SignerConfig]("/signer/relayer", signerConfigFile)
+			if overrideSigner != "" {
+				signerConfig.Address = overrideSigner
+			}
+			if passphrase != "" {
+				signerConfig.Passphrase = passphrase
+			}
+
+			if signerConfig.Address == "" {
+				logger.Fatal("No signer provided")
+			}
+			_, err = backend.PrivateKeyFromKeystore(common.HexToAddress(signerConfig.Address), signerConfig.Passphrase)
+			if err != nil {
+				logger.Fatal("Invalid keystore for signer", signerConfig)
 				return err
 			}
 
-			ctx := context.WithValue(context.Background(), "config", config)
+			ctx = context.WithValue(ctx, "signer", signerConfig)
 			publish.PublishTaskToAVSAndGateway(ctx)
 
 			return nil
 		},
 	}
 
-	libcmd.BindEnvConfig(cmd, &configFile)
+	libcmd.BindEnvConfig(cmd, &envConfigFile)
+	libcmd.BindSignerConfig(cmd, &signerConfigFile)
 	libcmd.BindSigner(cmd, &overrideSigner)
 	libcmd.BindPassphrase(cmd, &passphrase)
 
