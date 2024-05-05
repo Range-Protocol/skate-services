@@ -42,7 +42,7 @@ func BindSignerConfig(cmd *cobra.Command, filename *string) {
 
 // custom signer
 func BindSigner(cmd *cobra.Command, signer *string) {
-	cmd.Flags().StringVar(signer, "signer", *signer, "Override config signer, required passphrase")
+	cmd.Flags().StringVar(signer, "signer-address", *signer, "Override signer address, must be used with an associated passphrase, see `--passphrase` flag")
 }
 
 // Passphrase for unlocking signer keystore

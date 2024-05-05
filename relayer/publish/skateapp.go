@@ -40,7 +40,7 @@ func PublishTaskToAVSAndGateway(ctx context.Context) {
 	privateKey, _ := backend.PrivateKeyFromKeystore(common.HexToAddress(signer.Address), signer.Passphrase)
 
 	// Call submitTasks immediately
-	submitTasks(avsContract, &be, config, privateKey)
+	submitTasksToAvs(avsContract, &be, config, privateKey)
 
 	for {
 		select {
@@ -48,12 +48,12 @@ func PublishTaskToAVSAndGateway(ctx context.Context) {
 			relayerLogger.Info("AVS publish process stopped!")
 			return
 		case <-ticker.C:
-			submitTasks(avsContract, &be, config, privateKey)
+			submitTasksToAvs(avsContract, &be, config, privateKey)
 		}
 	}
 }
 
-func submitTasks(avsContract *bindingISkateAVS.BindingISkateAVS, be *backend.Backend, config *libcmd.EnvironmentConfig, privateKey *ecdsa.PrivateKey) {
+func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backend.Backend, config *libcmd.EnvironmentConfig, privateKey *ecdsa.PrivateKey) {
 	tasks := fetchPendingTasks()
 	batchTaskId := make([]*big.Int, 0)
 	batchMessageData := make([][]byte, 0)
@@ -82,7 +82,7 @@ func submitTasks(avsContract *bindingISkateAVS.BindingISkateAVS, be *backend.Bac
 		return
 	}
 
-	chainId := new(big.Int).SetUint64(config.ChainId)
+	chainId := new(big.Int).SetUint64(config.SkateChainId)
 	txOptsWithSigner, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
 	tx, err := avsContract.BatchSubmitData(
 		txOptsWithSigner,

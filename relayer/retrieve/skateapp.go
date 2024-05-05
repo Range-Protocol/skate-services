@@ -28,9 +28,6 @@ var (
 	Verbose       = true
 	taskCache     = skateappMemcache.NewCache(100 * 1024 * 1024) // 100MB
 	operatorCache = avsMemcache.NewCache(2 * 1024 * 1024)        // 2MB
-
-	// NOTE: change with config files
-	// holeskyStrategy = common.HexToAddress("0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071")
 )
 
 type submissionServer struct {
@@ -66,7 +63,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 	}
 
 	// Step 1: Verify the operator
-	be, _ := backend.NewBackend(config.HoleskyHTTPRPC)
+	be, _ := backend.NewBackend(config.HttpRPC)
 	avsContract, _ := bindingISkateAVS.NewBindingISkateAVS(
 		common.HexToAddress(config.SkateAVS), be,
 	)
@@ -90,7 +87,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 
 	// Step 2: Verify signature
 	signature := [65]byte(in.Signature.Signature)
-	taskDigest := avs.TaskDigest(in.Task.TaskId, in.Task.Msg, in.Task.Initiator, in.Task.ChainType, in.Task.ChainId)
+	taskDigest := avs.TaskDigestHash(in.Task.TaskId, in.Task.Msg, in.Task.Initiator, in.Task.ChainType, in.Task.ChainId)
 	valid, err := ecdsa.Verify(
 		common.HexToAddress(in.Signature.Address),
 		taskDigest,

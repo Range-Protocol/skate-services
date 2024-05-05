@@ -11,7 +11,9 @@ func New() *cobra.Command {
 	return libcmd.NewRootCmd(
 		"operator",
 		"CLI for Skate Operator",
-		registerCmd(),
+		registerAvsCmd(),
+		registerEigenLayerCmd(),
+		depositToAvs(),
     monitorSkateAppCmd(),
 		buildinfo.BuildInfoCmd(),
 	)

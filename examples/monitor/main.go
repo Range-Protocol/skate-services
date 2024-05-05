@@ -38,6 +38,7 @@ func main() {
 		// polygon: context.Background(),
 	}
 
+  println("Example retrieving USDC transfer on mainnet...")
 	monitor := monitor.NewMonitor(ctx, contractAddrs, backends)
 	monitor.Start(pollLog)
 }

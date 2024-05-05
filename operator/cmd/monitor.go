@@ -83,7 +83,7 @@ func monitorSkateAppCmd() *cobra.Command {
 // TODO: populate context to the runner
 func startMonitor(ctx context.Context) {
 	env := ctx.Value("config").(*libcmd.EnvironmentConfig)
-	nollie := network.ChainID(env.ChainId)
+	nollie := network.ChainID(env.SkateChainId)
 	nollie_backend0, _ := backend.NewBackend(env.SkateWSSRPC)
 	nollie_SkateApp := common.HexToAddress(env.SkateApp)
 

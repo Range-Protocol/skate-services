@@ -25,7 +25,7 @@ forge build
 
 # NOTE: change to our contracts here
 avs_service_contracts="
-  ISkateAVS IAVSDirectory IDelegationManager ISignatureUtils IStrategy
+  ISkateAVS IAVSDirectory IDelegationManager ISignatureUtils IStrategy IStrategyManager
   SkateApp SkateGateway
   IERC20
 "

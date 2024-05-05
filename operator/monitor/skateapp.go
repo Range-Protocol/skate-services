@@ -98,7 +98,7 @@ func PostProcessLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkateApp.B
 
 func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
 	// Step 1: sign the log
-	digestHash := avs.TaskDigest(
+	digestHash := avs.TaskDigestHash(
 		uint32(bindingTask.TaskId.Int64()), bindingTask.Message, bindingTask.Signer.Hex(),
 		pb.ChainType_EVM, bindingTask.Chain,
 	)

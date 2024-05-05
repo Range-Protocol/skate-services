@@ -8,15 +8,30 @@ import (
 )
 
 type EnvironmentConfig struct {
-	Environment        string `mapstructure:"environment"`
-	ChainId            uint64 `mapstructure:"chain_id"`
-	SkateWSSRPC        string `mapstructure:"skate_wss_rpc"`
-	SkateHttpRPC       string `mapstructure:"skate_http_rpc"`
-	SkateApp           string `mapstructure:"skate_app"`
-	SkateAVS           string `mapstructure:"skate_avs"`
-	HoleskyHTTPRPC     string `mapstructure:"holesky_http_rpc"`
-	HoleskyWSSRPC      string `mapstructure:"holesky_wss_rpc"`
-	WsETHStrategy      string `mapstructure:"wsETH_strategy"`
+	// Level
+	Environment string `mapstructure:"environment"`
+
+	// Skatechain
+	SkateChainId uint64 `mapstructure:"skate_chain_id"`
+	SkateWSSRPC  string `mapstructure:"skate_wss_rpc"`
+	SkateHttpRPC string `mapstructure:"skate_http_rpc"`
+	SkateApp     string `mapstructure:"skate_app"`
+
+	// Eigenlayer
+	MainChainId uint64 `mapstructure:"main_chain_id"`
+	SkateAVS          string `mapstructure:"skate_avs"`
+	WsETHStrategy     string `mapstructure:"wsETH_strategy"`
+	DelegationManager string `mapstructure:"delegation_manager"`
+	StrategyManager   string `mapstructure:"strategy_manager"`
+	AVSDirectory      string `mapstructure:"avs_directory"`
+	// AVS network
+	HttpRPC string `mapstructure:"http_rpc"`
+	WsRPC   string `mapstructure:"wss_rpc"`
+	// Strategies
+	Strategy_stETH string `mapstructure:"strategy_stETH"`
+	Token_stETH    string `mapstructure:"token_stETH"`
+
+	// AVS node configs
 	EigenMetricsIPPort string `mapstructure:"eigen_metrics_ip_port_address"`
 	EnableMetrics      bool   `mapstructure:"enable_metrics"`
 	NodeAPIIPPort      string `mapstructure:"node_api_ip_port_address"`

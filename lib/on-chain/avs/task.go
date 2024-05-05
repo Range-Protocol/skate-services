@@ -55,7 +55,7 @@ func TaskData(
 	}
 }
 
-func TaskDigest(
+func TaskDigestHash(
 	taskId uint32,
 	msg string,
 	initiator string,
@@ -66,9 +66,9 @@ func TaskDigest(
 	case pb.ChainType_EVM:
 		buf32 := make([]byte, 32) // taskId is uint256 in avs contract
 		taskIdBytes := new(big.Int).SetUint64(uint64(taskId)).FillBytes(buf32)
-		msgHash := TaskData(msg, initiator, chainType, chainId)
+		msgData := TaskData(msg, initiator, chainType, chainId)
 
-		return ecdsa.Keccak256(taskIdBytes, msgHash)
+		return ecdsa.Keccak256Message(taskIdBytes, msgData)
 	default:
 		panic("HashTask for unknown chain")
 	}

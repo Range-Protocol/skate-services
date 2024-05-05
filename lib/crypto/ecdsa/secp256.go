@@ -2,7 +2,7 @@ package ecdsa
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
+	"encoding/hex"
 	"io"
 
 	"github.com/pkg/errors"
@@ -68,10 +68,20 @@ func Keccak256(data ...[]byte) []byte {
 	return ethcrypto.Keccak256(data...)
 }
 
-func S256() elliptic.Curve {
+func Keccak256Message(data ...[]byte) []byte {
+	digest := ethcrypto.Keccak256(data...)
+	prefix, _ := hex.DecodeString("\x19Ethereum Signed Message:\n")
+	return Keccak256(prefix, digest)
+}
+
+func S256() *secp256k1.BitCurve {
 	return secp256k1.S256()
 }
 
-func KeyGen(curve elliptic.Curve, rand io.Reader) (*PrivateKey, error) {
+func FromECDSAPub(pubKey *ecdsa.PublicKey) []byte {
+  return ethcrypto.FromECDSAPub(pubKey)
+}
+
+func KeyGen(curve *secp256k1.BitCurve, rand io.Reader) (*PrivateKey, error) {
 	return ecdsa.GenerateKey(curve, rand)
 }

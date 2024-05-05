@@ -6,18 +6,12 @@ help:
 
 
 -----------------------------: ## 
-
 ___CONTRACTS___: ## 
-
-build-contracts: ## builds all contracts
-	cd contracts && forge build
-
-bindings: ## generates contracts bindings
+gen-contracts-bindings: ## generates contracts bindings
 	cd contracts && ./gen_bindings.sh
 
 ______API______:
-
-gen-api-pb: ## generate api pbs
+gen-api-bindings: ## generate protobuf binding for grpc server
 	cd api && ./gen_pb.sh
 
 
@@ -32,13 +26,6 @@ docker-build-and-publish-images: ## builds and publishes operator and aggregator
 -----------------------------: ## 
 # TODO: WIP
 ____OFFCHAIN_SOFTWARE___: ## 
-start-aggregator: ## 
-	go run aggregator/cmd/main.go --config config-files/aggregator.yaml \
-		--skate-deployment ${DEPLOYMENT_FILES_DIR}/skate_avs_deployment_output.json \
-		--ecdsa-private-key ${AGGREGATOR_ECDSA_PRIV_KEY}
-
-start-operator: ## 
-	go run operator/cmd/main.go --config config-files/operator.anvil.yaml
 
 
 -----------------------------: ## 
@@ -47,12 +34,9 @@ mocks: ## generates mocks for tests
 	go install go.uber.org/mock/mockgen@v0.4.0
 	go generate ./...
 
-test-unit: ## runs all unit tests
-	go test $$(go list ./... | grep -v /bindings | grep -v /logging) -coverprofile=coverage.out -covermode=atomic --timeout 15s
+run-unit-tests: ## runs all unit tests
+	go test $$(go list ./... | grep -v /bindings | grep -v /pb) -coverprofile=coverage.out -covermode=atomic --timeout 15s
 	go tool cover -html=coverage.out -o coverage.html
-
-test-contracts: ## runs all forge tests
-	cd contracts && forge test
 
 test-integration: ## runs all integration tests
 	go test ./tests/integration/... -v -count=1
