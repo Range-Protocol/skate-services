@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"skatechain.org/lib/logging"
 
@@ -31,8 +32,6 @@ func monitorSkateAppCmd() *cobra.Command {
 		Short: "Monitor TaskCreated events from Skate AVS, verify and dispatch to relayer",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			logger.Info("Listening to Skate App request...")
-
 			envConfig, err := libcmd.ReadConfig[libcmd.EnvironmentConfig]("/environment", envConfigFile)
 			if err != nil {
 				logger.Fatalf("Can't load config file at %s, error = %v", envConfigFile, err)
@@ -56,6 +55,12 @@ func monitorSkateAppCmd() *cobra.Command {
 					logger.Fatal("Invalid keystore for signer", signerConfig)
 					return err
 				}
+        logger.Info("Operator: monitoring and processing tasks ..",
+					"signer", signerConfig.Address,
+					"fromConfig", fmt.Sprintf("configs/signer/operator/%s.yaml", signerConfigFile),
+				)
+			} else {
+				logger.Info("No signer provided, running with watch-only mode...")
 			}
 
 			startMonitor(ctx)

@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	pb "skatechain.org/api/pb/relayer"
 	bindingISkateAVS "skatechain.org/contracts/bindings/ISkateAVS"
+	// bindingSkateGateway "skatechain.org/contracts/bindings/SkateGateway"
 	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/crypto/ecdsa"
 	"skatechain.org/lib/logging"
@@ -95,7 +96,6 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 			taskGroups[key] = []disk.SignedTask{task}
 		}
 	}
-	relayerLogger.Info("Task", "groupCount", len(taskGroups), "taskCount", len(tasks))
 
 	for key, taskGroup := range taskGroups {
 		if len(taskGroup)*10_000 > operatorCount*6_666 {
@@ -124,15 +124,9 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 	}
 
 	if len(batchTaskId) == 0 {
-		if Verbose {
-			relayerLogger.Info("No pending task found ..")
-		}
 		return
 	}
 
-	if Verbose {
-		relayerLogger.Info("Submitting tasks to AVS ..")
-	}
 	chainId := new(big.Int).SetUint64(config.MainChainId)
 	avsTransactor, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
 
@@ -148,8 +142,10 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 		relayerLogger.Error("Transaction simulation failed", "error", errors.Wrap(err, "SkateAVS.BatchSubmitData"))
 		return
 	}
-	// relayerLogger.Info("Simulation successful")
 
+	if Verbose {
+		relayerLogger.Info("Submitting batched tasks to Skate AVS ..")
+	}
 	tx, err := avsContract.BatchSubmitData(
 		avsTransactor,
 		batchTaskId,
@@ -170,19 +166,36 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 		return
 	}
 	if Verbose {
-    relayerLogger.Info("Transaction receipt: ", "status", receipt.Status, "gasUsed", receipt.GasUsed, "gasPrice", receipt.EffectiveGasPrice.Uint64())
+		relayerLogger.Info("Transaction receipt: ", "status", receipt.Status, "gasUsed", receipt.GasUsed, "gasPrice", receipt.EffectiveGasPrice.Uint64())
 	}
 
-	for key := range taskGroups {
+	for key, _ := range taskGroups {
 		completedTask := disk.CompletedTask{
 			TaskId:    key.TaskId,
 			ChainId:   key.ChainId,
 			ChainType: key.ChainType,
 		}
+		// TODO: also publish respective tasks to supported Skate Gateway
+		// Current relayer must be acknowledged by destination gateway
+		// switch key.ChainId {
+		// case 421614:
+		// 	task := taskGroup[0]
+		// 	be, _ := backend.NewBackend("https://arbitrum-sepolia.blockpi.network/v1/rpc/public")
+		// 	gatewayAddress := common.HexToAddress("0x2968C1663B41Cc633540148c679f43136a4644Fc")
+		// 	gatewayContract, _ := bindingSkateGateway.NewBindingSkateGateway(gatewayAddress, be)
+		// 	transactor, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(421614))
+		//
+		// 	tx, _ := gatewayContract.PostMsg(
+		// 		transactor,
+		// 		big.NewInt(int64(key.TaskId)),
+		// 		task.Message,
+		// 		common.HexToAddress(task.Initiator),
+		// 	)
+		// 	receipt, _ := backend.WaitMined(context.Background(), &be, tx)
+		// 	relayerLogger.Info("Submitted to gateway, receipt:", "status", receipt.Status)
+		// }
 		disk.InsertCompletedTask(completedTask)
 	}
-
-	// TODO: also publish respective tasks to Skate Gateway
 }
 
 func fetchPendingTasks() ([]disk.SignedTask, error) {

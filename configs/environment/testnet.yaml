@@ -10,6 +10,8 @@ skate_app: 0x2968C1663B41Cc633540148c679f43136a4644Fc
 ##################################
 # HoleSky environments
 
+http_rpc: https://holesky.drpc.org
+wss_rpc: wss://holesky.drpc.org
 ## Skate
 main_chain_id: 17000 # Holesky testnet
 skate_avs: 0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071
@@ -27,12 +29,11 @@ token_stETH: 0x3F1c547b21f65e10480dE3ad8E19fAAC46C95034
 # strategy_mETH: 0xaccc5A86732BE85b5012e8614AF237801636F8e5
 
 ##################################
-# EVM RPC
-http_rpc: https://holesky.drpc.org
-wss_rpc: wss://holesky.drpc.org
-# NOTE: add other chain RPCs
-# ARbitrum, mantle, ...
-
+# Skate Gateway
+gateway:
+  421614: # Arbitrum-sepolia
+    http_rpc: https://arbitrum-sepolia.blockpi.network/v1/rpc/public
+    address: 0x2968C1663B41Cc633540148c679f43136a4644Fc
 
 ##################################
 # AVS node spec compliance https://eigen.nethermind.io/docs/spec/intro

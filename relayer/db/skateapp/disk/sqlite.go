@@ -67,13 +67,15 @@ func InitializeSkateApp() {
 		id           INTEGER PRIMARY KEY AUTOINCREMENT,
 	  taskId       INTEGER,
 	  chainId      INTEGER,
-	  chainType    INTEGER
+	  chainType    INTEGER,
+
+    UNIQUE (taskId, chainType, chainId)
 	)`)
 }
 
 func InsertSignedTask(signedTask SignedTask) error {
 	_, err := SkateAppDB.Exec(
-		"INSERT INTO "+SignedTaskSchema+" (taskId, message, initiator, chainId, chainType, hash, operator, signature) VALUES (?,?,?,?,?,?,?,?)",
+		"INSERT OR IGNORE INTO "+SignedTaskSchema+" (taskId, message, initiator, chainId, chainType, hash, operator, signature) VALUES (?,?,?,?,?,?,?,?)",
 		signedTask.TaskId, signedTask.Message, signedTask.Initiator, signedTask.ChainId,
 		signedTask.ChainType, signedTask.Hash, signedTask.Operator, signedTask.Signature,
 	)
@@ -118,7 +120,7 @@ func RetrieveSignedTasks() ([]SignedTask, error) {
 
 func InsertCompletedTask(completedTask CompletedTask) error {
 	_, err := SkateAppDB.Exec(
-		"INSERT INTO "+CompletedTaskSchema+" (taskId, chainId, chainType) VALUES (?,?,?)",
+		"INSERT OR IGNORE INTO "+CompletedTaskSchema+" (taskId, chainId, chainType) VALUES (?,?,?)",
 		completedTask.TaskId, completedTask.ChainId, completedTask.ChainType,
 	)
 	if err != nil {

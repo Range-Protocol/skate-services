@@ -120,6 +120,26 @@ go run relayer/main.go publish
 
 _TODO: publish verified message to SkateGateway on destination chains as well_
 
+## Quick start
+
+Make files `./Makefile` contains shortcut to bootstrap pilot avs services.
+Please explore and config respective nodes using designated CLI tools
+
+__Prerequisites: 3 operator accounts registered with avs and 1 relayer__
+
+1. Start all 3 operators:
+
+```bash
+make start-operators
+```
+
+2. Start all relayer service (retrieve and publish):
+
+```bash
+make start-relayer
+```
+
+
 --- 
 ## Deployment info
 
@@ -139,9 +159,13 @@ Currently 3 operator (registered with Skate AVS):
 
 # To Be Completed
 
+## Skate gateway
+
+Improve configuration format + finish logic in `relayer/publish/skateapp.go:submitTasksToAvs(..)`
+
 ## Docker images
 
-WIP
+Try [ko toolings](https://ko.build/)
 
 ## Metrics server
 

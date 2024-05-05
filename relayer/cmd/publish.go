@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"skatechain.org/lib/logging"
 	"skatechain.org/lib/on-chain/backend"
@@ -27,8 +28,6 @@ func publishCmd() *cobra.Command {
     Relayer slashing is not yet implemented`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			logger.Info("Publishing to AVS ...")
-
 			envConfig, err := libcmd.ReadConfig[libcmd.EnvironmentConfig]("/environment", envConfigFile)
 			if err != nil {
 				logger.Fatalf("Can't load config file at %s, error = %v", envConfigFile, err)
@@ -53,6 +52,10 @@ func publishCmd() *cobra.Command {
 				return err
 			}
 
+      logger.Info("Relayer: publishing tasks to AVS ..",
+				"signer", signerConfig.Address,
+				"fromConfig", fmt.Sprintf("configs/relayer/%s.yaml", signerConfigFile),
+			)
 			ctx = context.WithValue(ctx, "signer", signerConfig)
 			publish.PublishTaskToAVSAndGateway(ctx)
 

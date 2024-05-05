@@ -49,10 +49,7 @@ func SubscribeSkateApp(addr common.Address, be backend.Backend, ctx context.Cont
 	signer := ctx.Value("signer").(*libcmd.SignerConfig)
 
 	var privateKey *ecdsa.PrivateKey
-	if signer == nil {
-		monitor.Logger.Info("No private key provided, run with watch-only mode")
-	} else {
-		monitor.Logger.Info("Signer:", "address", signer.Address)
+	if signer != nil {
 		privateKey, _ = backend.PrivateKeyFromKeystore(common.HexToAddress(signer.Address), signer.Passphrase)
 	}
 
@@ -167,8 +164,10 @@ func dumpLog(bindingTask *bindingSkateApp.BindingSkateAppTaskCreated) error {
 	return err
 }
 
-// NOTE: work over both https and wss, polling every 2 seconds by default
-// To be implemented (logic not up to date)
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NOTE: work over both https and wss, polling every 12 seconds by default
+// To be implemented if necessary (logic not up to date)
 func PollSkateApp(addr common.Address, backend backend.Backend, ctx context.Context) error {
 	contract, err := bindingSkateApp.NewBindingSkateApp(addr, backend)
 	if err != nil {

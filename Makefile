@@ -24,9 +24,12 @@ docker-build-and-publish-images: ## builds and publishes operator and aggregator
 
 
 -----------------------------: ## 
-# TODO: WIP
 ____OFFCHAIN_SOFTWARE___: ## 
+start-operators:
+	cd operator && ./start.sh
 
+start-relayer:
+	cd relayer && ./start.sh
 
 -----------------------------: ## 
 _____HELPER_____: ## 
