@@ -96,6 +96,7 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 		}
 	}
 	relayerLogger.Info("Task", "groupCount", len(taskGroups), "taskCount", len(tasks))
+
 	for key, taskGroup := range taskGroups {
 		if len(taskGroup)*10_000 > operatorCount*6_666 {
 			if Verbose {
@@ -132,10 +133,25 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 	if Verbose {
 		relayerLogger.Info("Submitting tasks to AVS ..")
 	}
-	chainId := new(big.Int).SetUint64(config.SkateChainId)
-	txOptsWithSigner, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
+	chainId := new(big.Int).SetUint64(config.MainChainId)
+	avsTransactor, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
+
+	transactorNoSend := *avsTransactor
+	transactorNoSend.NoSend = true
+	_, err = avsContract.BatchSubmitData(
+		&transactorNoSend,
+		batchTaskId,
+		batchMessageData,
+		batchSignatureTuples,
+	)
+	if err != nil {
+		relayerLogger.Error("Transaction simulation failed", "error", errors.Wrap(err, "SkateAVS.BatchSubmitData"))
+		return
+	}
+	// relayerLogger.Info("Simulation successful")
+
 	tx, err := avsContract.BatchSubmitData(
-		txOptsWithSigner,
+		avsTransactor,
 		batchTaskId,
 		batchMessageData,
 		batchSignatureTuples,
@@ -144,21 +160,25 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 		relayerLogger.Error("Failed to submit transaction", "error", errors.Wrap(err, "SkateAVS.BatchSubmitData"))
 		return
 	}
-	relayerLogger.Info("Transaction sent", "txHash", tx.Hash().Hex())
+	if Verbose {
+		relayerLogger.Info("Verification request sent", "txHash", tx.Hash().Hex())
+	}
 
 	receipt, err := backend.WaitMined(context.Background(), be, tx)
 	if err != nil {
 		relayerLogger.Error("Failed to get transaction receipt", "error", err)
 		return
 	}
-	relayerLogger.Info("Transaction receipt", "status", receipt.Status, "gasUsed", receipt.GasUsed, "gasPrice", receipt.EffectiveGasPrice.Uint64())
+	if Verbose {
+    relayerLogger.Info("Transaction receipt: ", "status", receipt.Status, "gasUsed", receipt.GasUsed, "gasPrice", receipt.EffectiveGasPrice.Uint64())
+	}
 
 	for key := range taskGroups {
-    completedTask := disk.CompletedTask{
-      TaskId: key.TaskId,
-      ChainId: key.ChainId,
-      ChainType: key.ChainType,
-    }
+		completedTask := disk.CompletedTask{
+			TaskId:    key.TaskId,
+			ChainId:   key.ChainId,
+			ChainType: key.ChainType,
+		}
 		disk.InsertCompletedTask(completedTask)
 	}
 

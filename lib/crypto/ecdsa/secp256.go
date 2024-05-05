@@ -2,7 +2,7 @@ package ecdsa
 
 import (
 	"crypto/ecdsa"
-	"encoding/hex"
+	// "encoding/hex"
 	"io"
 
 	"github.com/pkg/errors"
@@ -70,7 +70,7 @@ func Keccak256(data ...[]byte) []byte {
 
 func Keccak256Message(data ...[]byte) []byte {
 	digest := ethcrypto.Keccak256(data...)
-	prefix, _ := hex.DecodeString("\x19Ethereum Signed Message:\n32")
+	prefix := []byte("\x19Ethereum Signed Message:\n32")
 	return Keccak256(prefix, digest)
 }
 

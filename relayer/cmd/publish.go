@@ -49,7 +49,7 @@ func publishCmd() *cobra.Command {
 			}
 			_, err = backend.PrivateKeyFromKeystore(common.HexToAddress(signerConfig.Address), signerConfig.Passphrase)
 			if err != nil {
-				logger.Fatal("Invalid keystore for signer", signerConfig)
+				logger.Fatal("Invalid keystore for relayer", signerConfig)
 				return err
 			}
 
