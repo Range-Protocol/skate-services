@@ -70,7 +70,7 @@ func Keccak256(data ...[]byte) []byte {
 
 func Keccak256Message(data ...[]byte) []byte {
 	digest := ethcrypto.Keccak256(data...)
-	prefix, _ := hex.DecodeString("\x19Ethereum Signed Message:\n")
+	prefix, _ := hex.DecodeString("\x19Ethereum Signed Message:\n32")
 	return Keccak256(prefix, digest)
 }
 

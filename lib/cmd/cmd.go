@@ -15,9 +15,10 @@ func NewRootCmd(appName string, appDescription string, subCmds ...*cobra.Command
 		Use:   appName,
 		Short: appDescription,
 		Args:  cobra.NoArgs,
-		// PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-		// 	return initializeConfig(appName, cmd)
-		// },
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			// NOTE: global prehook for each process
+			return nil
+		},
 	}
 
 	root.AddCommand(subCmds...)

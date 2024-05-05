@@ -2,7 +2,6 @@ package register
 
 import (
 	"context"
-	"encoding/hex"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -61,10 +60,6 @@ func RegisterOperatorWithAVS(
 		Salt:      salt,
 		Expiry:    expiry,
 	}
-
-	addr, _ := ecdsa.EcRecover(digestHash[:], signature)
-	logger.Info("Input", "hash", hex.EncodeToString(digestHash[:]), "signature", hex.EncodeToString(signature[:]))
-	logger.Info("Recovered", "address", addr, "original", ecdsa.PubkeyToAddress(privateKey.PublicKey))
 
 	avsContract, err := bindingISkateAVS.NewBindingISkateAVS(common.HexToAddress(config.SkateAVS), be)
 	if err != nil {

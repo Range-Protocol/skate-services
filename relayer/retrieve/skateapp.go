@@ -43,14 +43,13 @@ func NewSubmissionServer(ctx context.Context) *submissionServer {
 
 func (s *submissionServer) Start() {
 	grpc_server := grpc.NewServer()
-	retrieveLogger.Info("Starting with ...", "context", s.ctx.Value("config"))
 
 	pb.RegisterSubmissionServer(grpc_server, s)
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	retrieveLogger.Info("server listening at ", "addr", lis.Addr())
+	retrieveLogger.Info("Server listening", "Address", lis.Addr().String(), "network", lis.Addr().Network())
 	if err := grpc_server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

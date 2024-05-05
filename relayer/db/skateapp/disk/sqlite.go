@@ -17,7 +17,7 @@ var (
 )
 
 const (
-	SignedTaskSchema = "SignedTasks"
+	SignedTaskSchema    = "SignedTasks"
 	CompletedTaskSchema = "CompletedTasks"
 )
 
@@ -29,7 +29,7 @@ func init() {
 		panic("Relayer DB initialization failed")
 	}
 	SkateAppDB = db
-  InitializeSkateApp()
+	InitializeSkateApp()
 }
 
 type SignedTask struct {
@@ -50,6 +50,7 @@ type CompletedTask struct {
 }
 
 func InitializeSkateApp() {
+	// TODO: decouple this table, [operator/signature] references [remaining]
 	SkateAppDB.Exec(`CREATE TABLE IF NOT EXISTS ` + SignedTaskSchema + ` (
 		id           INTEGER PRIMARY KEY AUTOINCREMENT,
 	  taskId       INTEGER,
@@ -77,7 +78,7 @@ func InsertSignedTask(signedTask SignedTask) error {
 		signedTask.ChainType, signedTask.Hash, signedTask.Operator, signedTask.Signature,
 	)
 	if err != nil {
-		TaskLogger.Error("InsertTask failed", "task", signedTask, "err", err)
+		TaskLogger.Error("InsertSignedTask failed", "task", signedTask, "err", err)
 		return err
 	}
 	return nil
@@ -86,7 +87,7 @@ func InsertSignedTask(signedTask SignedTask) error {
 func RetrieveSignedTasks() ([]SignedTask, error) {
 	rows, err := SkateAppDB.Query("SELECT * FROM " + SignedTaskSchema)
 	if err != nil {
-		TaskLogger.Error("SelectAllTasks failed", "err", err)
+		TaskLogger.Error("RetrieveSignedTask failed", "err", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -113,4 +114,16 @@ func RetrieveSignedTasks() ([]SignedTask, error) {
 	}
 
 	return resultTasks, nil
+}
+
+func InsertCompletedTask(completedTask CompletedTask) error {
+	_, err := SkateAppDB.Exec(
+		"INSERT INTO "+CompletedTaskSchema+" (taskId, chainId, chainType) VALUES (?,?,?)",
+		completedTask.TaskId, completedTask.ChainId, completedTask.ChainType,
+	)
+	if err != nil {
+		TaskLogger.Error("InsertCompletedTask failed", "task", completedTask, "err", err)
+		return err
+	}
+	return nil
 }

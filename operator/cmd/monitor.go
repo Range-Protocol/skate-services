@@ -48,9 +48,7 @@ func monitorSkateAppCmd() *cobra.Command {
 				signerConfig.Passphrase = passphrase
 			}
 
-			if signerConfig.Address == "" {
-				logger.Info("No signer provided, run with read-only mode")
-			} else {
+			if signerConfig.Address != "" {
 				ctx = context.WithValue(ctx, "signer", signerConfig)
 
 				_, err := backend.PrivateKeyFromKeystore(common.HexToAddress(signerConfig.Address), signerConfig.Passphrase)

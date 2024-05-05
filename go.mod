@@ -4,7 +4,6 @@ go 1.21.8
 
 require (
 	github.com/Layr-Labs/eigenda v0.6.1
-	github.com/Layr-Labs/eigenlayer-cli v0.7.2
 	github.com/Layr-Labs/eigensdk-go v0.1.6
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/consensys/gnark-crypto v0.12.1
@@ -19,7 +18,6 @@ require (
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.33.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -94,5 +92,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )

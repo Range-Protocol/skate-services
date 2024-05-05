@@ -14,7 +14,7 @@ func New() *cobra.Command {
 		"CLI for Skate Relayer",
 		retrieveCmd(),
     publishCmd(),
-		buildinfo.BuildInfoCmd(),
+    buildinfo.BuildInfoCmd(), // TODO: seperate package info
 	)
 }
 

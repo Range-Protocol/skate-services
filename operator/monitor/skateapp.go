@@ -52,6 +52,7 @@ func SubscribeSkateApp(addr common.Address, be backend.Backend, ctx context.Cont
 	if signer == nil {
 		monitor.Logger.Info("No private key provided, run with watch-only mode")
 	} else {
+		monitor.Logger.Info("Signer:", "address", signer.Address)
 		privateKey, _ = backend.PrivateKeyFromKeystore(common.HexToAddress(signer.Address), signer.Passphrase)
 	}
 
@@ -127,6 +128,8 @@ func signAndBroadcastLog(privateKey *ecdsa.PrivateKey, bindingTask *bindingSkate
 		TaskId:    uint32(bindingTask.TaskId.Uint64()),
 		Msg:       bindingTask.Message,
 		ChainId:   bindingTask.Chain,
+		ChainType: pb.ChainType_EVM,
+		Hash:      bindingTask.TaskHash[:],
 		Initiator: bindingTask.Signer.Hex(),
 	}
 

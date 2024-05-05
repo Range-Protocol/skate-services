@@ -52,6 +52,7 @@ func BuildInfoCmd() *cobra.Command {
 }
 
 // getBuildInfo returns the git commit hash and timestamp from the runtime build info.
+// TODO: vcs info not shown, to be fixed
 func getBuildInfo() (goversion, hash string, timestamp string) {
 	goversion, hash, timestamp = "█████", "█████", "█████"
 	hashLen := 7
