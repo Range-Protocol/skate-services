@@ -79,7 +79,7 @@ func S256() *secp256k1.BitCurve {
 }
 
 func FromECDSAPub(pubKey *ecdsa.PublicKey) []byte {
-  return ethcrypto.FromECDSAPub(pubKey)
+	return ethcrypto.FromECDSAPub(pubKey)
 }
 
 func KeyGen(curve *secp256k1.BitCurve, rand io.Reader) (*PrivateKey, error) {

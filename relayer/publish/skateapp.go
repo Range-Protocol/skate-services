@@ -175,9 +175,9 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 			ChainId:   key.ChainId,
 			ChainType: key.ChainType,
 		}
-		// TODO: publish tasks logic to all supported Skate Gateway, 
-    // improve environement configured logic
-    //
+		// TODO: publish tasks logic to all supported Skate Gateway,
+		// improve environement configured logic
+		//
 		switch key.ChainId {
 		case 421614:
 			task := taskGroup[0]
@@ -186,7 +186,7 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 			gatewayContract, _ := bindingSkateGateway.NewBindingSkateGateway(gatewayAddress, be)
 			transactor, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(421614))
 
-			relayerLogger.Info("Submitting message to Gateway", "chainID", 421614)
+			relayerLogger.Info("Submitting message to Gateway", "chainID", key.ChainId)
 			tx, _ := gatewayContract.PostMsg(
 				transactor,
 				big.NewInt(int64(key.TaskId)),
@@ -194,7 +194,7 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 				common.HexToAddress(task.Initiator),
 			)
 			receipt, _ := backend.WaitMined(context.Background(), &be, tx)
-			relayerLogger.Info("Submitted to gateway, receipt:", "status", receipt.Status)
+			relayerLogger.Info("Submitted to gateway, receipt:", "status", receipt.Status, "chainID", key.ChainId)
 		}
 		disk.InsertCompletedTask(completedTask)
 	}

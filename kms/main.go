@@ -1,11 +1,12 @@
 package main
 
-// NOTE: 
+// NOTE:
 import (
 	"context"
+
+	clicmd "skatechain.org/kms/cmd"
 	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/logging"
-	clicmd "skatechain.org/kms/cmd"
 
 	figure "github.com/common-nighthawk/go-figure"
 )
@@ -23,6 +24,6 @@ func main() {
 
 	err := cmd.ExecuteContext(context.Background())
 	if err != nil {
-    logger.Fatal("Fatal error occurred!", "error", err.Error())
+		logger.Fatal("Fatal error occurred!", "error", err.Error())
 	}
 }

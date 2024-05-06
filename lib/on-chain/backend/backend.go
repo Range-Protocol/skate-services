@@ -11,12 +11,12 @@ import (
 // NOTE: add Skate specific logic for multichain ops in future versions,
 type Backend struct {
 	elEthClient.Client
-  RPC string
+	RPC string
 }
 
 func NewBackend(rpc string) (Backend, error) {
 	elClient, err := elEthClient.NewClient(rpc)
-  return Backend{Client: elClient, RPC: rpc}, err
+	return Backend{Client: elClient, RPC: rpc}, err
 }
 
 var _ elEthClient.Client = (*Backend)(nil)

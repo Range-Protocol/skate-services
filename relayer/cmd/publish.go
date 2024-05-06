@@ -52,7 +52,7 @@ func publishCmd() *cobra.Command {
 				return err
 			}
 
-      logger.Info("Relayer: publishing tasks to AVS ..",
+			logger.Info("Relayer: publishing tasks to AVS ..",
 				"signer", signerConfig.Address,
 				"fromConfig", fmt.Sprintf("configs/relayer/%s.yaml", signerConfigFile),
 			)

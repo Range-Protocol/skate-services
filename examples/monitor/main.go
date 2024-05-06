@@ -38,7 +38,7 @@ func main() {
 		// polygon: context.Background(),
 	}
 
-  println("Example retrieving USDC transfer on mainnet...")
+	println("Example retrieving USDC transfer on mainnet...")
 	monitor := monitor.NewMonitor(ctx, contractAddrs, backends)
 	monitor.Start(pollLog)
 }
@@ -99,7 +99,7 @@ func pollLog(addr common.Address, backend backend.Backend, ctx context.Context) 
 		return err
 	}
 
-  // NOTE: Polling interval = 12s
+	// NOTE: Polling interval = 12s
 	ticker := time.NewTicker(12 * time.Second)
 	defer ticker.Stop()
 

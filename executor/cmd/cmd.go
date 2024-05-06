@@ -11,6 +11,6 @@ func New() *cobra.Command {
 	return libcmd.NewRootCmd(
 		"executor",
 		"CLI for Skate Executor",
-    buildinfo.BuildInfoCmd(), // TODO: seperate package info
+		buildinfo.BuildInfoCmd(), // TODO: seperate package info
 	)
 }

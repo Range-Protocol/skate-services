@@ -11,7 +11,7 @@ import (
 func TestCacheOperator(t *testing.T) {
 	cache := NewCache(2 * 1024 * 1024)
 	entry := Operator{
-		Address:  "0x123",
+		Address: "0x123",
 		// Strategy: "USDC",
 		// Amount:   "123333333333333333333",
 	}

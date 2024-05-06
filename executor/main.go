@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
+	clicmd "skatechain.org/executor/cmd"
 	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/logging"
-	clicmd "skatechain.org/executor/cmd"
 
 	figure "github.com/common-nighthawk/go-figure"
 )
@@ -27,4 +27,3 @@ func main() {
 		logger.Fatal("Fatal error occurred!", "error", err.Error())
 	}
 }
-

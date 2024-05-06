@@ -55,7 +55,7 @@ func monitorSkateAppCmd() *cobra.Command {
 					logger.Fatal("Invalid keystore for signer", signerConfig)
 					return err
 				}
-        logger.Info("Operator: monitoring and processing tasks ..",
+				logger.Info("Operator: monitoring and processing tasks ..",
 					"signer", signerConfig.Address,
 					"fromConfig", fmt.Sprintf("configs/signer/operator/%s.yaml", signerConfigFile),
 				)

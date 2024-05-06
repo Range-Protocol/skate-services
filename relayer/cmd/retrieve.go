@@ -22,7 +22,7 @@ func retrieveCmd() *cobra.Command {
     Status of the request is not available yet`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-      logger.Info("Relayer: receiving signatures ..")
+			logger.Info("Relayer: receiving signatures ..")
 
 			config, err := libcmd.ReadConfig[libcmd.EnvironmentConfig]("/environment", configFile)
 			if err != nil {

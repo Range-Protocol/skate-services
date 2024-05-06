@@ -32,7 +32,7 @@ const TaskSchema = "Tasks"
 
 // NOTE: should contains chainType as well
 type Task struct {
-	TaskId        int64
+	TaskId    int64
 	Message   string
 	ChainId   uint32
 	ChainType uint32
@@ -68,7 +68,7 @@ func task_dbToBinding(task *Task) *bindingTask {
 
 func task_bindingToDb(task *bindingSkateApp.BindingSkateAppTaskCreated) *Task {
 	return &Task{
-		TaskId:      task.TaskId.Int64(),
+		TaskId:  task.TaskId.Int64(),
 		Message: task.Message,
 		Signer:  task.Signer.Hex(),
 		Hash:    task.TaskHash[:],

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/logging"
 	clicmd "skatechain.org/operator/cmd"
@@ -22,6 +23,6 @@ func main() {
 
 	err := cmd.ExecuteContext(context.Background())
 	if err != nil {
-    logger.Fatal("Fatal error occurred!", "error", err.Error())
+		logger.Fatal("Fatal error occurred!", "error", err.Error())
 	}
 }

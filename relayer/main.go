@@ -22,10 +22,10 @@ func main() {
 
 	// Create a new Logger instance
 	logger := logging.NewLoggerWithConsoleWriter()
-  logger.Info(viper.GetString("skate_app"))
+	logger.Info(viper.GetString("skate_app"))
 
 	err := cmd.ExecuteContext(context.Background())
 	if err != nil {
-    logger.Fatal("Fatal error occurred!", "error", err.Error())
+		logger.Fatal("Fatal error occurred!", "error", err.Error())
 	}
 }

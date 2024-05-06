@@ -7,8 +7,8 @@ import (
 
 	"github.com/coocood/freecache"
 	"github.com/pkg/errors"
-	"skatechain.org/lib/crypto/ecdsa"
 	pb "skatechain.org/api/pb/relayer"
+	"skatechain.org/lib/crypto/ecdsa"
 
 	config "skatechain.org/relayer/db"
 )

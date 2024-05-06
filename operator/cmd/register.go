@@ -64,12 +64,12 @@ func registerAvsCmd() *cobra.Command {
 
 			// Expires in 1 minutes (5 blocks)
 			expiry := new(big.Int).SetInt64(time.Now().Unix() + 60)
-      
+
 			register.RegisterOperatorWithAVS(
 				privateKey,
 				envConfig,
 				[32]byte(salt),
-        expiry,
+				expiry,
 			)
 
 			return nil
@@ -122,12 +122,12 @@ func registerEigenLayerCmd() *cobra.Command {
 				return err
 			}
 
-      // NOTE: sanest default for operators, might set it configurable in the futures
+			// NOTE: sanest default for operators, might set it configurable in the futures
 			operatorDetails := bindingIDelegationManager.IDelegationManagerOperatorDetails{
-        EarningsReceiver: common.HexToAddress(signerConfig.Address), // earns to self
-        DelegationApprover: common.Address{}, // address(0x0) means accepts all
-        StakerOptOutWindowBlocks: 1, // CAN'T BE DECREASE
-      }
+				EarningsReceiver:         common.HexToAddress(signerConfig.Address), // earns to self
+				DelegationApprover:       common.Address{},                          // address(0x0) means accepts all
+				StakerOptOutWindowBlocks: 1,                                         // CAN'T BE DECREASE
+			}
 			register.RegisterOperatorWithEigenLayer(
 				privateKey,
 				envConfig,

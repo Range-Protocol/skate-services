@@ -12,7 +12,7 @@ func New() *cobra.Command {
 		"relayer",
 		"CLI for Skate Relayer",
 		retrieveCmd(),
-    publishCmd(),
-    buildinfo.BuildInfoCmd(), // TODO: seperate package info
+		publishCmd(),
+		buildinfo.BuildInfoCmd(), // TODO: seperate package info
 	)
 }

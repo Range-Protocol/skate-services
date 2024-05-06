@@ -10,5 +10,5 @@ type Metrics interface {
 
 // NOTE: upgrade to custom implementations in future versions to support multichain features of Skate AVS
 type EigenMetrics struct {
-  elMetrics.EigenMetrics
+	elMetrics.EigenMetrics
 }

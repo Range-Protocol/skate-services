@@ -70,6 +70,6 @@ func TaskDigestHash(
 
 		return ecdsa.Keccak256Message(taskIdBytes, msgBytes)
 	default:
-    panic("ecdsa.TaskDigestHash: not implemented!")
+		panic("ecdsa.TaskDigestHash: not implemented!")
 	}
 }

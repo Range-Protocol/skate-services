@@ -25,9 +25,9 @@ import (
 
 var (
 	retrieveLogger = logging.NewLoggerWithConsoleWriter()
-	Verbose       = true
-	taskCache     = skateappMemcache.NewCache(100 * 1024 * 1024) // 100MB
-	operatorCache = avsMemcache.NewCache(2 * 1024 * 1024)        // 2MB
+	Verbose        = true
+	taskCache      = skateappMemcache.NewCache(100 * 1024 * 1024) // 100MB
+	operatorCache  = avsMemcache.NewCache(2 * 1024 * 1024)        // 2MB
 )
 
 type submissionServer struct {
@@ -72,16 +72,16 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 			retrieveLogger.Error("Validator address format error", "error", err)
 		}
 		return &pb.TaskSubmitReply{
-      Result: pb.TaskStatus_REJECTED,
-    }, api.NewInvalidArgError("signer address format error")
+			Result: pb.TaskStatus_REJECTED,
+		}, api.NewInvalidArgError("signer address format error")
 	}
 	if !isValidOperator {
 		if Verbose {
 			retrieveLogger.Error("Not an operator", "address", in.Signature.Address)
 		}
 		return &pb.TaskSubmitReply{
-      Result: pb.TaskStatus_REJECTED,
-    }, api.NewInvalidArgError(fmt.Sprintf("%s is not a Skate AVS operator", in.Signature.Address))
+			Result: pb.TaskStatus_REJECTED,
+		}, api.NewInvalidArgError(fmt.Sprintf("%s is not a Skate AVS operator", in.Signature.Address))
 	}
 
 	// Step 2: Verify signature
@@ -98,7 +98,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 		}
 		return &pb.TaskSubmitReply{
 			Result: pb.TaskStatus_REJECTED,
-    }, api.NewInvalidArgError("Signature format error, must be 65 bytes")
+		}, api.NewInvalidArgError("Signature format error, must be 65 bytes")
 	}
 	if !valid {
 		if Verbose {
@@ -112,7 +112,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 		}
 		return &pb.TaskSubmitReply{
 			Result: pb.TaskStatus_REJECTED,
-    }, api.NewInvalidArgError("Invalid signature")
+		}, api.NewInvalidArgError("Invalid signature")
 	}
 
 	// Step 3: Update the db and push to memcache
@@ -147,7 +147,7 @@ func (s *submissionServer) SubmitTask(_ context.Context, in *pb.TaskSubmitReques
 		retrieveLogger.Error("Insert signed task to db failed", "error", err)
 		return &pb.TaskSubmitReply{
 			Result: pb.TaskStatus_REJECTED,
-    }, api.NewInternalError("Server can't securely store signed task object")
+		}, api.NewInternalError("Server can't securely store signed task object")
 	}
 
 	return &pb.TaskSubmitReply{

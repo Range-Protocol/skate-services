@@ -11,7 +11,7 @@ func New() *cobra.Command {
 	return libcmd.NewRootCmd(
 		"Key management system",
 		"CLI for Private Key management when intereacting with Skate App",
-    storePrivatekeyCmd(),
-    buildinfo.BuildInfoCmd(), // TODO: seperate package info
+		storePrivatekeyCmd(),
+		buildinfo.BuildInfoCmd(), // TODO: seperate package info
 	)
 }

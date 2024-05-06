@@ -14,7 +14,7 @@ func New() *cobra.Command {
 		registerAvsCmd(),
 		registerEigenLayerCmd(),
 		depositToAvs(),
-    monitorSkateAppCmd(),
-    buildinfo.BuildInfoCmd(), // TODO: seperate package info
+		monitorSkateAppCmd(),
+		buildinfo.BuildInfoCmd(), // TODO: seperate package info
 	)
 }

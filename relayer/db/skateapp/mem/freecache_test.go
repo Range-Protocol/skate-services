@@ -9,7 +9,7 @@ import (
 
 // TestCacheMessage tests caching an entry.
 func TestCacheMessage(t *testing.T) {
-  cache := NewCache(2 * 1024 * 1024)
+	cache := NewCache(2 * 1024 * 1024)
 	entry := Message{
 		TaskId:    1,
 		Initiator: "123 Skatechain.org",
@@ -36,7 +36,7 @@ func TestCacheMessage(t *testing.T) {
 
 // TestAppendSignature tests appending a signature to the cache.
 func TestAppendSignature(t *testing.T) {
-  cache := NewCache(2 * 1024 * 1024)
+	cache := NewCache(2 * 1024 * 1024)
 	// Clear previous data
 	refEntry := Message{
 		TaskId:    1,
@@ -45,7 +45,7 @@ func TestAppendSignature(t *testing.T) {
 		ChainType: pb.ChainType_EVM,
 		ChainId:   1,
 	}
-  key := GenKey(refEntry)
+	key := GenKey(refEntry)
 
 	signatures := []Signature{
 		{Operator: "0x1_Skatechain.org", Signature: [65]byte{1}},

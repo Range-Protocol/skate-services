@@ -1,10 +1,6 @@
 package network
 
 const (
-   
-)
-
-const (
 	// Devnet = single-machine deployment, consist of multiple Docker containers.
 	Devnet NetworkID = "devnet"
 
