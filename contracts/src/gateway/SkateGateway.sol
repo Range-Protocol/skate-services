@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 contract SkateGateway {
     address owner;
     mapping(uint256 => MessageData) public messages;
-    mapping(address => bool) private operators;
+    address public relayer;
 
     struct MessageData {
         string message;
@@ -20,24 +20,21 @@ contract SkateGateway {
         _;
     }
 
-    modifier onlyOperators() {
-        require(operators[msg.sender] == true);
+    modifier onlyRelayer() {
+        require(relayer == msg.sender);
         _;
     }
 
-    function registerOperator(address op) public onlyOwner {
-        operators[op] = true;
-    }
-
-    function deregisterOperator(address op) public onlyOwner {
-        operators[op] = false;
+    function registerRelayer(address newRelayer) public onlyOwner {
+        relayer = newRelayer;
     }
 
     function postMsg(
         uint taskId,
         string memory message,
         address signer
-    ) public onlyOperators {
+    ) public onlyRelayer {
+        // TODO: Verify that message has appeared in Skate AVS
         messages[taskId] = MessageData(message, signer);
     }
 

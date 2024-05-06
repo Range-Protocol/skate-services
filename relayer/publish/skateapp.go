@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	pb "skatechain.org/api/pb/relayer"
 	bindingISkateAVS "skatechain.org/contracts/bindings/ISkateAVS"
-	// bindingSkateGateway "skatechain.org/contracts/bindings/SkateGateway"
+	bindingSkateGateway "skatechain.org/contracts/bindings/SkateGateway"
 	libcmd "skatechain.org/lib/cmd"
 	"skatechain.org/lib/crypto/ecdsa"
 	"skatechain.org/lib/logging"
@@ -169,31 +169,33 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 		relayerLogger.Info("Transaction receipt: ", "status", receipt.Status, "gasUsed", receipt.GasUsed, "gasPrice", receipt.EffectiveGasPrice.Uint64())
 	}
 
-	for key, _ := range taskGroups {
+	for key, taskGroup := range taskGroups {
 		completedTask := disk.CompletedTask{
 			TaskId:    key.TaskId,
 			ChainId:   key.ChainId,
 			ChainType: key.ChainType,
 		}
-		// TODO: also publish respective tasks to supported Skate Gateway
-		// Current relayer must be acknowledged by destination gateway
-		// switch key.ChainId {
-		// case 421614:
-		// 	task := taskGroup[0]
-		// 	be, _ := backend.NewBackend("https://arbitrum-sepolia.blockpi.network/v1/rpc/public")
-		// 	gatewayAddress := common.HexToAddress("0x2968C1663B41Cc633540148c679f43136a4644Fc")
-		// 	gatewayContract, _ := bindingSkateGateway.NewBindingSkateGateway(gatewayAddress, be)
-		// 	transactor, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(421614))
-		//
-		// 	tx, _ := gatewayContract.PostMsg(
-		// 		transactor,
-		// 		big.NewInt(int64(key.TaskId)),
-		// 		task.Message,
-		// 		common.HexToAddress(task.Initiator),
-		// 	)
-		// 	receipt, _ := backend.WaitMined(context.Background(), &be, tx)
-		// 	relayerLogger.Info("Submitted to gateway, receipt:", "status", receipt.Status)
-		// }
+		// TODO: publish tasks logic to all supported Skate Gateway, 
+    // improve environement configured logic
+    //
+		switch key.ChainId {
+		case 421614:
+			task := taskGroup[0]
+			be, _ := backend.NewBackend("https://arbitrum-sepolia.blockpi.network/v1/rpc/public")
+			gatewayAddress := common.HexToAddress("0xc1Eb0ffdb88c59A043ab5B4fBf200795Cd5Acd03")
+			gatewayContract, _ := bindingSkateGateway.NewBindingSkateGateway(gatewayAddress, be)
+			transactor, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(421614))
+
+			relayerLogger.Info("Submitting message to Gateway", "chainID", 421614)
+			tx, _ := gatewayContract.PostMsg(
+				transactor,
+				big.NewInt(int64(key.TaskId)),
+				task.Message,
+				common.HexToAddress(task.Initiator),
+			)
+			receipt, _ := backend.WaitMined(context.Background(), &be, tx)
+			relayerLogger.Info("Submitted to gateway, receipt:", "status", receipt.Status)
+		}
 		disk.InsertCompletedTask(completedTask)
 	}
 }

@@ -30,10 +30,10 @@ token_stETH: 0x3F1c547b21f65e10480dE3ad8E19fAAC46C95034
 
 ##################################
 # Skate Gateway
-gateway:
-  421614: # Arbitrum-sepolia
-    http_rpc: https://arbitrum-sepolia.blockpi.network/v1/rpc/public
-    address: 0x2968C1663B41Cc633540148c679f43136a4644Fc
+# gateway:
+#   421614: # Arbitrum-sepolia
+#     http_rpc: https://arbitrum-sepolia.blockpi.network/v1/rpc/public
+#     address: 0xc1Eb0ffdb88c59A043ab5B4fBf200795Cd5Acd03
 
 ##################################
 # AVS node spec compliance https://eigen.nethermind.io/docs/spec/intro
