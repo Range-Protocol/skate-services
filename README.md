@@ -37,6 +37,9 @@ specify **ACCOUNT ADDRESS** and corresponding **passphrase**. Example config in 
 
 _NOTE:_ recommend to store account in `configs/signer/operator/1.yaml` and `configs/signer/relayer/1.yaml` for subsequent calls work with default params
 
+__WARNING ⚠️⚠️: NEVER LEAK ANY FILE GENERATED IN "./keystore", ALWAYS IGNORE THEM IN YOUR COMMIT.
+PRIVATE KEY CAN BE CONSTRUCTED FROM ENCRYPTED JSON FILE + PASSPHRASE.__
+
 ### II. Register Operator to Skate AVS
 
 Command for Operator onboarding
