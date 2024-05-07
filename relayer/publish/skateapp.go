@@ -119,7 +119,18 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 			sort.Slice(signatureTuples, func(i, j int) bool {
 				return signatureTuples[i].Operator.Big().Cmp(signatureTuples[j].Operator.Big()) < 0
 			})
-			batchSignatureTuples = append(batchSignatureTuples, signatureTuples)
+
+      // NOTE: hack to ensure tuple is unique, should be filter at db level
+      // Prevent the case where multiple process with the same operator running.
+			var uniqueSignatureTuples []SignatureTuple
+			uniqueSignatureTuples = append(uniqueSignatureTuples, signatureTuples[0]) // 100% len > 0
+
+			for i := 1; i < len(signatureTuples); i++ {
+				if signatureTuples[i].Operator.Big().Cmp(uniqueSignatureTuples[len(uniqueSignatureTuples)-1].Operator.Big()) != 0 {
+					uniqueSignatureTuples = append(uniqueSignatureTuples, signatureTuples[i])
+				}
+			}
+			batchSignatureTuples = append(batchSignatureTuples, uniqueSignatureTuples)
 		}
 	}
 
