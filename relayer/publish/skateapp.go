@@ -98,7 +98,7 @@ func submitTasksToAvs(avsContract *bindingISkateAVS.BindingISkateAVS, be *backen
 	}
 
 	for key, taskGroup := range taskGroups {
-		if len(taskGroup)*10_000 > operatorCount*6_666 {
+		if len(taskGroup)*10_000 >= operatorCount*6_666 {
 			if Verbose {
 				relayerLogger.Info("Task approved for submission", "task key", key)
 			}
