@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.20;
 
 import {IStrategy} from "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
@@ -7,19 +7,21 @@ import {IAVSDirectory} from "eigenlayer-contracts/src/contracts/interfaces/IAVSD
 import {IDelegationManager} from "./interfaces/IDelegationManager.sol";
 
 abstract contract SkateAVSStorage is ISkateAVS {
-    IStrategy[] internal _strategies;
+    StrategyParams[] internal _strategies;
     address[] internal _operators;
-    mapping(address => bytes) internal _operatorPubkeys;
+    mapping(address => bool) internal _isOperator;
     mapping(address => bool) internal _allowlist;
     uint32 internal _maxOperatorCount;
     bool public _allowlistEnabled;
     uint96 public _minOperatorStake;
 
-    function strategies() external view override returns (IStrategy[] memory) {
+    function strategies() external view override returns (StrategyParams[] memory) {
         return _strategies;
     }
 
-    //    function operatorPubkeys(address operator) external view override returns () {}
+    function isOperator(address operator) public view override returns (bool) {
+        return _isOperator[operator];
+    }
 
     function isInAllowlist(address operator) external view override returns (bool) {
         return _allowlist[operator];

@@ -1,11 +1,16 @@
-// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.20;
 
 import {IStrategy} from "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 import {ISignatureUtils} from "eigenlayer-contracts/src/contracts/interfaces/ISignatureUtils.sol";
 
 interface ISkateAVS {
-    event StrategiesSet(address[] strategies);
+    struct StrategyParams {
+        IStrategy strategy;
+        uint96 multiplier;
+    }
+
+    event StrategiesSet(StrategyParams[] strategies);
     event OperatorAdded(address indexed operator);
     event OperatorRemoved(address indexed operator);
     event MaxOperatorCountSet(uint32 maxOperatorCount);
@@ -18,24 +23,23 @@ interface ISkateAVS {
 
     struct Operator {
         address addr;
-        bytes pubkey;
         uint96 delegated;
         uint96 staked;
     }
 
-    function registerOperator(
-        bytes calldata pubkey,
+    function registerOperatorToAVS(
+        address operator,
         ISignatureUtils.SignatureWithSaltAndExpiry memory operatorSignature
     ) external;
-    function setMetadataURI(string memory metadataURI) external;
-    function setStrategies(address[] calldata strategies_) external;
+    function updateAVSMetadataURI(string memory metadataURI) external;
+    function setStrategies(StrategyParams[] calldata strategies_) external;
     function setMinOperatorStake(uint96 stake) external;
     function setMaxOperatorCount(uint32 count) external;
     function addToAllowlist(address operator) external;
     function removeFromAllowlist(address operator) external;
     function enableAllowlist() external;
     function disableAllowlist() external;
-    function ejectOperator(address operator) external;
+    function deregisterOperatorFromAVS(address operator) external;
     function pause() external;
     function unpause() external;
 
@@ -56,7 +60,8 @@ interface ISkateAVS {
     function isInAllowlist(address operator) external view returns (bool);
     function avsDirectory() external view returns (address);
     function operators() external view returns (Operator[] memory);
-    function strategies() external view returns (IStrategy[] memory);
+    function isOperator(address operator) external view returns (bool);
+    function strategies() external view returns (StrategyParams[] memory);
     function getRestakeableStrategies() external view returns (address[] memory);
     function getOperatorRestakedStrategies(address operator) external view returns (address[] memory);
     function canRegister(address operator) external view returns (bool);

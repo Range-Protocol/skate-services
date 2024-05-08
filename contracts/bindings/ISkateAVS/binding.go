@@ -39,7 +39,6 @@ type ISignatureUtilsSignatureWithSaltAndExpiry struct {
 // ISkateAVSOperator is an auto generated low-level Go binding around an user-defined struct.
 type ISkateAVSOperator struct {
 	Addr      common.Address
-	Pubkey    []byte
 	Delegated *big.Int
 	Staked    *big.Int
 }
@@ -50,9 +49,15 @@ type ISkateAVSSignatureTuple struct {
 	Signature []byte
 }
 
+// ISkateAVSStrategyParams is an auto generated low-level Go binding around an user-defined struct.
+type ISkateAVSStrategyParams struct {
+	Strategy   common.Address
+	Multiplier *big.Int
+}
+
 // BindingISkateAVSMetaData contains all meta data concerning the BindingISkateAVS contract.
 var BindingISkateAVSMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"function\",\"name\":\"addToAllowlist\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"allowlistEnabled\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"avsDirectory\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"batchSubmitData\",\"inputs\":[{\"name\":\"taskIds\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"messageDatas\",\"type\":\"bytes[]\",\"internalType\":\"bytes[]\"},{\"name\":\"signaturesTuples\",\"type\":\"tuple[][]\",\"internalType\":\"structISkateAVS.SignatureTuple[][]\",\"components\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"canRegister\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"disableAllowlist\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"ejectOperator\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"enableAllowlist\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"getOperatorRestakedStrategies\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRestakeableStrategies\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"isInAllowlist\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"maxOperatorCount\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"minOperatorStake\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint96\",\"internalType\":\"uint96\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"operators\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"tuple[]\",\"internalType\":\"structISkateAVS.Operator[]\",\"components\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"pubkey\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"delegated\",\"type\":\"uint96\",\"internalType\":\"uint96\"},{\"name\":\"staked\",\"type\":\"uint96\",\"internalType\":\"uint96\"}]}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"pause\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"registerOperator\",\"inputs\":[{\"name\":\"pubkey\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"operatorSignature\",\"type\":\"tuple\",\"internalType\":\"structISignatureUtils.SignatureWithSaltAndExpiry\",\"components\":[{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"salt\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"expiry\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"removeFromAllowlist\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setMaxOperatorCount\",\"inputs\":[{\"name\":\"count\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setMetadataURI\",\"inputs\":[{\"name\":\"metadataURI\",\"type\":\"string\",\"internalType\":\"string\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setMinOperatorStake\",\"inputs\":[{\"name\":\"stake\",\"type\":\"uint96\",\"internalType\":\"uint96\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setStrategies\",\"inputs\":[{\"name\":\"strategies_\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"strategies\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address[]\",\"internalType\":\"contractIStrategy[]\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"submitData\",\"inputs\":[{\"name\":\"taskId\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"messageData\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"signatureTuples\",\"type\":\"tuple[]\",\"internalType\":\"structISkateAVS.SignatureTuple[]\",\"components\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"unpause\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"event\",\"name\":\"AllowlistDisabled\",\"inputs\":[],\"anonymous\":false},{\"type\":\"event\",\"name\":\"AllowlistEnabled\",\"inputs\":[],\"anonymous\":false},{\"type\":\"event\",\"name\":\"DataSubmitted\",\"inputs\":[{\"name\":\"taskId\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"},{\"name\":\"messageData\",\"type\":\"bytes\",\"indexed\":false,\"internalType\":\"bytes\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MaxOperatorCountSet\",\"inputs\":[{\"name\":\"maxOperatorCount\",\"type\":\"uint32\",\"indexed\":false,\"internalType\":\"uint32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MinOperatorStakeSet\",\"inputs\":[{\"name\":\"minOperatorStake\",\"type\":\"uint96\",\"indexed\":false,\"internalType\":\"uint96\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorAdded\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorAllowed\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorDisallowed\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorRemoved\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"StrategiesSet\",\"inputs\":[{\"name\":\"strategies\",\"type\":\"address[]\",\"indexed\":false,\"internalType\":\"address[]\"}],\"anonymous\":false}]",
+	ABI: "[{\"type\":\"function\",\"name\":\"addToAllowlist\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"allowlistEnabled\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"avsDirectory\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"batchSubmitData\",\"inputs\":[{\"name\":\"taskIds\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"messageDatas\",\"type\":\"bytes[]\",\"internalType\":\"bytes[]\"},{\"name\":\"signaturesTuples\",\"type\":\"tuple[][]\",\"internalType\":\"structISkateAVS.SignatureTuple[][]\",\"components\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"canRegister\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"deregisterOperatorFromAVS\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"disableAllowlist\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"enableAllowlist\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"getOperatorRestakedStrategies\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRestakeableStrategies\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"isInAllowlist\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"isOperator\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"maxOperatorCount\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"minOperatorStake\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint96\",\"internalType\":\"uint96\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"operators\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"tuple[]\",\"internalType\":\"structISkateAVS.Operator[]\",\"components\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"delegated\",\"type\":\"uint96\",\"internalType\":\"uint96\"},{\"name\":\"staked\",\"type\":\"uint96\",\"internalType\":\"uint96\"}]}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"pause\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"registerOperatorToAVS\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"operatorSignature\",\"type\":\"tuple\",\"internalType\":\"structISignatureUtils.SignatureWithSaltAndExpiry\",\"components\":[{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"salt\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"expiry\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"removeFromAllowlist\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setMaxOperatorCount\",\"inputs\":[{\"name\":\"count\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setMinOperatorStake\",\"inputs\":[{\"name\":\"stake\",\"type\":\"uint96\",\"internalType\":\"uint96\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"setStrategies\",\"inputs\":[{\"name\":\"strategies_\",\"type\":\"tuple[]\",\"internalType\":\"structISkateAVS.StrategyParams[]\",\"components\":[{\"name\":\"strategy\",\"type\":\"address\",\"internalType\":\"contractIStrategy\"},{\"name\":\"multiplier\",\"type\":\"uint96\",\"internalType\":\"uint96\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"strategies\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"tuple[]\",\"internalType\":\"structISkateAVS.StrategyParams[]\",\"components\":[{\"name\":\"strategy\",\"type\":\"address\",\"internalType\":\"contractIStrategy\"},{\"name\":\"multiplier\",\"type\":\"uint96\",\"internalType\":\"uint96\"}]}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"submitData\",\"inputs\":[{\"name\":\"taskId\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"messageData\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"signatureTuples\",\"type\":\"tuple[]\",\"internalType\":\"structISkateAVS.SignatureTuple[]\",\"components\":[{\"name\":\"operator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}]}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"unpause\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateAVSMetadataURI\",\"inputs\":[{\"name\":\"metadataURI\",\"type\":\"string\",\"internalType\":\"string\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"event\",\"name\":\"AllowlistDisabled\",\"inputs\":[],\"anonymous\":false},{\"type\":\"event\",\"name\":\"AllowlistEnabled\",\"inputs\":[],\"anonymous\":false},{\"type\":\"event\",\"name\":\"DataSubmitted\",\"inputs\":[{\"name\":\"taskId\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"},{\"name\":\"messageData\",\"type\":\"bytes\",\"indexed\":false,\"internalType\":\"bytes\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MaxOperatorCountSet\",\"inputs\":[{\"name\":\"maxOperatorCount\",\"type\":\"uint32\",\"indexed\":false,\"internalType\":\"uint32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MinOperatorStakeSet\",\"inputs\":[{\"name\":\"minOperatorStake\",\"type\":\"uint96\",\"indexed\":false,\"internalType\":\"uint96\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorAdded\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorAllowed\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorDisallowed\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"OperatorRemoved\",\"inputs\":[{\"name\":\"operator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"StrategiesSet\",\"inputs\":[{\"name\":\"strategies\",\"type\":\"tuple[]\",\"indexed\":false,\"internalType\":\"structISkateAVS.StrategyParams[]\",\"components\":[{\"name\":\"strategy\",\"type\":\"address\",\"internalType\":\"contractIStrategy\"},{\"name\":\"multiplier\",\"type\":\"uint96\",\"internalType\":\"uint96\"}]}],\"anonymous\":false}]",
 }
 
 // BindingISkateAVSABI is the input ABI used to generate the binding from.
@@ -387,6 +392,37 @@ func (_BindingISkateAVS *BindingISkateAVSCallerSession) IsInAllowlist(operator c
 	return _BindingISkateAVS.Contract.IsInAllowlist(&_BindingISkateAVS.CallOpts, operator)
 }
 
+// IsOperator is a free data retrieval call binding the contract method 0x6d70f7ae.
+//
+// Solidity: function isOperator(address operator) view returns(bool)
+func (_BindingISkateAVS *BindingISkateAVSCaller) IsOperator(opts *bind.CallOpts, operator common.Address) (bool, error) {
+	var out []interface{}
+	err := _BindingISkateAVS.contract.Call(opts, &out, "isOperator", operator)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsOperator is a free data retrieval call binding the contract method 0x6d70f7ae.
+//
+// Solidity: function isOperator(address operator) view returns(bool)
+func (_BindingISkateAVS *BindingISkateAVSSession) IsOperator(operator common.Address) (bool, error) {
+	return _BindingISkateAVS.Contract.IsOperator(&_BindingISkateAVS.CallOpts, operator)
+}
+
+// IsOperator is a free data retrieval call binding the contract method 0x6d70f7ae.
+//
+// Solidity: function isOperator(address operator) view returns(bool)
+func (_BindingISkateAVS *BindingISkateAVSCallerSession) IsOperator(operator common.Address) (bool, error) {
+	return _BindingISkateAVS.Contract.IsOperator(&_BindingISkateAVS.CallOpts, operator)
+}
+
 // MaxOperatorCount is a free data retrieval call binding the contract method 0xc75e3aed.
 //
 // Solidity: function maxOperatorCount() view returns(uint32)
@@ -451,7 +487,7 @@ func (_BindingISkateAVS *BindingISkateAVSCallerSession) MinOperatorStake() (*big
 
 // Operators is a free data retrieval call binding the contract method 0xe673df8a.
 //
-// Solidity: function operators() view returns((address,bytes,uint96,uint96)[])
+// Solidity: function operators() view returns((address,uint96,uint96)[])
 func (_BindingISkateAVS *BindingISkateAVSCaller) Operators(opts *bind.CallOpts) ([]ISkateAVSOperator, error) {
 	var out []interface{}
 	err := _BindingISkateAVS.contract.Call(opts, &out, "operators")
@@ -468,30 +504,30 @@ func (_BindingISkateAVS *BindingISkateAVSCaller) Operators(opts *bind.CallOpts) 
 
 // Operators is a free data retrieval call binding the contract method 0xe673df8a.
 //
-// Solidity: function operators() view returns((address,bytes,uint96,uint96)[])
+// Solidity: function operators() view returns((address,uint96,uint96)[])
 func (_BindingISkateAVS *BindingISkateAVSSession) Operators() ([]ISkateAVSOperator, error) {
 	return _BindingISkateAVS.Contract.Operators(&_BindingISkateAVS.CallOpts)
 }
 
 // Operators is a free data retrieval call binding the contract method 0xe673df8a.
 //
-// Solidity: function operators() view returns((address,bytes,uint96,uint96)[])
+// Solidity: function operators() view returns((address,uint96,uint96)[])
 func (_BindingISkateAVS *BindingISkateAVSCallerSession) Operators() ([]ISkateAVSOperator, error) {
 	return _BindingISkateAVS.Contract.Operators(&_BindingISkateAVS.CallOpts)
 }
 
 // Strategies is a free data retrieval call binding the contract method 0xd9f9027f.
 //
-// Solidity: function strategies() view returns(address[])
-func (_BindingISkateAVS *BindingISkateAVSCaller) Strategies(opts *bind.CallOpts) ([]common.Address, error) {
+// Solidity: function strategies() view returns((address,uint96)[])
+func (_BindingISkateAVS *BindingISkateAVSCaller) Strategies(opts *bind.CallOpts) ([]ISkateAVSStrategyParams, error) {
 	var out []interface{}
 	err := _BindingISkateAVS.contract.Call(opts, &out, "strategies")
 
 	if err != nil {
-		return *new([]common.Address), err
+		return *new([]ISkateAVSStrategyParams), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+	out0 := *abi.ConvertType(out[0], new([]ISkateAVSStrategyParams)).(*[]ISkateAVSStrategyParams)
 
 	return out0, err
 
@@ -499,15 +535,15 @@ func (_BindingISkateAVS *BindingISkateAVSCaller) Strategies(opts *bind.CallOpts)
 
 // Strategies is a free data retrieval call binding the contract method 0xd9f9027f.
 //
-// Solidity: function strategies() view returns(address[])
-func (_BindingISkateAVS *BindingISkateAVSSession) Strategies() ([]common.Address, error) {
+// Solidity: function strategies() view returns((address,uint96)[])
+func (_BindingISkateAVS *BindingISkateAVSSession) Strategies() ([]ISkateAVSStrategyParams, error) {
 	return _BindingISkateAVS.Contract.Strategies(&_BindingISkateAVS.CallOpts)
 }
 
 // Strategies is a free data retrieval call binding the contract method 0xd9f9027f.
 //
-// Solidity: function strategies() view returns(address[])
-func (_BindingISkateAVS *BindingISkateAVSCallerSession) Strategies() ([]common.Address, error) {
+// Solidity: function strategies() view returns((address,uint96)[])
+func (_BindingISkateAVS *BindingISkateAVSCallerSession) Strategies() ([]ISkateAVSStrategyParams, error) {
 	return _BindingISkateAVS.Contract.Strategies(&_BindingISkateAVS.CallOpts)
 }
 
@@ -553,6 +589,27 @@ func (_BindingISkateAVS *BindingISkateAVSTransactorSession) BatchSubmitData(task
 	return _BindingISkateAVS.Contract.BatchSubmitData(&_BindingISkateAVS.TransactOpts, taskIds, messageDatas, signaturesTuples)
 }
 
+// DeregisterOperatorFromAVS is a paid mutator transaction binding the contract method 0xa364f4da.
+//
+// Solidity: function deregisterOperatorFromAVS(address operator) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactor) DeregisterOperatorFromAVS(opts *bind.TransactOpts, operator common.Address) (*types.Transaction, error) {
+	return _BindingISkateAVS.contract.Transact(opts, "deregisterOperatorFromAVS", operator)
+}
+
+// DeregisterOperatorFromAVS is a paid mutator transaction binding the contract method 0xa364f4da.
+//
+// Solidity: function deregisterOperatorFromAVS(address operator) returns()
+func (_BindingISkateAVS *BindingISkateAVSSession) DeregisterOperatorFromAVS(operator common.Address) (*types.Transaction, error) {
+	return _BindingISkateAVS.Contract.DeregisterOperatorFromAVS(&_BindingISkateAVS.TransactOpts, operator)
+}
+
+// DeregisterOperatorFromAVS is a paid mutator transaction binding the contract method 0xa364f4da.
+//
+// Solidity: function deregisterOperatorFromAVS(address operator) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactorSession) DeregisterOperatorFromAVS(operator common.Address) (*types.Transaction, error) {
+	return _BindingISkateAVS.Contract.DeregisterOperatorFromAVS(&_BindingISkateAVS.TransactOpts, operator)
+}
+
 // DisableAllowlist is a paid mutator transaction binding the contract method 0xcf8e629a.
 //
 // Solidity: function disableAllowlist() returns()
@@ -572,27 +629,6 @@ func (_BindingISkateAVS *BindingISkateAVSSession) DisableAllowlist() (*types.Tra
 // Solidity: function disableAllowlist() returns()
 func (_BindingISkateAVS *BindingISkateAVSTransactorSession) DisableAllowlist() (*types.Transaction, error) {
 	return _BindingISkateAVS.Contract.DisableAllowlist(&_BindingISkateAVS.TransactOpts)
-}
-
-// EjectOperator is a paid mutator transaction binding the contract method 0xe5d98f94.
-//
-// Solidity: function ejectOperator(address operator) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactor) EjectOperator(opts *bind.TransactOpts, operator common.Address) (*types.Transaction, error) {
-	return _BindingISkateAVS.contract.Transact(opts, "ejectOperator", operator)
-}
-
-// EjectOperator is a paid mutator transaction binding the contract method 0xe5d98f94.
-//
-// Solidity: function ejectOperator(address operator) returns()
-func (_BindingISkateAVS *BindingISkateAVSSession) EjectOperator(operator common.Address) (*types.Transaction, error) {
-	return _BindingISkateAVS.Contract.EjectOperator(&_BindingISkateAVS.TransactOpts, operator)
-}
-
-// EjectOperator is a paid mutator transaction binding the contract method 0xe5d98f94.
-//
-// Solidity: function ejectOperator(address operator) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactorSession) EjectOperator(operator common.Address) (*types.Transaction, error) {
-	return _BindingISkateAVS.Contract.EjectOperator(&_BindingISkateAVS.TransactOpts, operator)
 }
 
 // EnableAllowlist is a paid mutator transaction binding the contract method 0xc6a2aac8.
@@ -637,25 +673,25 @@ func (_BindingISkateAVS *BindingISkateAVSTransactorSession) Pause() (*types.Tran
 	return _BindingISkateAVS.Contract.Pause(&_BindingISkateAVS.TransactOpts)
 }
 
-// RegisterOperator is a paid mutator transaction binding the contract method 0x7719d097.
+// RegisterOperatorToAVS is a paid mutator transaction binding the contract method 0x9926ee7d.
 //
-// Solidity: function registerOperator(bytes pubkey, (bytes,bytes32,uint256) operatorSignature) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactor) RegisterOperator(opts *bind.TransactOpts, pubkey []byte, operatorSignature ISignatureUtilsSignatureWithSaltAndExpiry) (*types.Transaction, error) {
-	return _BindingISkateAVS.contract.Transact(opts, "registerOperator", pubkey, operatorSignature)
+// Solidity: function registerOperatorToAVS(address operator, (bytes,bytes32,uint256) operatorSignature) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactor) RegisterOperatorToAVS(opts *bind.TransactOpts, operator common.Address, operatorSignature ISignatureUtilsSignatureWithSaltAndExpiry) (*types.Transaction, error) {
+	return _BindingISkateAVS.contract.Transact(opts, "registerOperatorToAVS", operator, operatorSignature)
 }
 
-// RegisterOperator is a paid mutator transaction binding the contract method 0x7719d097.
+// RegisterOperatorToAVS is a paid mutator transaction binding the contract method 0x9926ee7d.
 //
-// Solidity: function registerOperator(bytes pubkey, (bytes,bytes32,uint256) operatorSignature) returns()
-func (_BindingISkateAVS *BindingISkateAVSSession) RegisterOperator(pubkey []byte, operatorSignature ISignatureUtilsSignatureWithSaltAndExpiry) (*types.Transaction, error) {
-	return _BindingISkateAVS.Contract.RegisterOperator(&_BindingISkateAVS.TransactOpts, pubkey, operatorSignature)
+// Solidity: function registerOperatorToAVS(address operator, (bytes,bytes32,uint256) operatorSignature) returns()
+func (_BindingISkateAVS *BindingISkateAVSSession) RegisterOperatorToAVS(operator common.Address, operatorSignature ISignatureUtilsSignatureWithSaltAndExpiry) (*types.Transaction, error) {
+	return _BindingISkateAVS.Contract.RegisterOperatorToAVS(&_BindingISkateAVS.TransactOpts, operator, operatorSignature)
 }
 
-// RegisterOperator is a paid mutator transaction binding the contract method 0x7719d097.
+// RegisterOperatorToAVS is a paid mutator transaction binding the contract method 0x9926ee7d.
 //
-// Solidity: function registerOperator(bytes pubkey, (bytes,bytes32,uint256) operatorSignature) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactorSession) RegisterOperator(pubkey []byte, operatorSignature ISignatureUtilsSignatureWithSaltAndExpiry) (*types.Transaction, error) {
-	return _BindingISkateAVS.Contract.RegisterOperator(&_BindingISkateAVS.TransactOpts, pubkey, operatorSignature)
+// Solidity: function registerOperatorToAVS(address operator, (bytes,bytes32,uint256) operatorSignature) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactorSession) RegisterOperatorToAVS(operator common.Address, operatorSignature ISignatureUtilsSignatureWithSaltAndExpiry) (*types.Transaction, error) {
+	return _BindingISkateAVS.Contract.RegisterOperatorToAVS(&_BindingISkateAVS.TransactOpts, operator, operatorSignature)
 }
 
 // RemoveFromAllowlist is a paid mutator transaction binding the contract method 0x5da93d7e.
@@ -700,27 +736,6 @@ func (_BindingISkateAVS *BindingISkateAVSTransactorSession) SetMaxOperatorCount(
 	return _BindingISkateAVS.Contract.SetMaxOperatorCount(&_BindingISkateAVS.TransactOpts, count)
 }
 
-// SetMetadataURI is a paid mutator transaction binding the contract method 0x750521f5.
-//
-// Solidity: function setMetadataURI(string metadataURI) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactor) SetMetadataURI(opts *bind.TransactOpts, metadataURI string) (*types.Transaction, error) {
-	return _BindingISkateAVS.contract.Transact(opts, "setMetadataURI", metadataURI)
-}
-
-// SetMetadataURI is a paid mutator transaction binding the contract method 0x750521f5.
-//
-// Solidity: function setMetadataURI(string metadataURI) returns()
-func (_BindingISkateAVS *BindingISkateAVSSession) SetMetadataURI(metadataURI string) (*types.Transaction, error) {
-	return _BindingISkateAVS.Contract.SetMetadataURI(&_BindingISkateAVS.TransactOpts, metadataURI)
-}
-
-// SetMetadataURI is a paid mutator transaction binding the contract method 0x750521f5.
-//
-// Solidity: function setMetadataURI(string metadataURI) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactorSession) SetMetadataURI(metadataURI string) (*types.Transaction, error) {
-	return _BindingISkateAVS.Contract.SetMetadataURI(&_BindingISkateAVS.TransactOpts, metadataURI)
-}
-
 // SetMinOperatorStake is a paid mutator transaction binding the contract method 0xeb316235.
 //
 // Solidity: function setMinOperatorStake(uint96 stake) returns()
@@ -742,24 +757,24 @@ func (_BindingISkateAVS *BindingISkateAVSTransactorSession) SetMinOperatorStake(
 	return _BindingISkateAVS.Contract.SetMinOperatorStake(&_BindingISkateAVS.TransactOpts, stake)
 }
 
-// SetStrategies is a paid mutator transaction binding the contract method 0x9a4620b7.
+// SetStrategies is a paid mutator transaction binding the contract method 0xff5c02f2.
 //
-// Solidity: function setStrategies(address[] strategies_) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactor) SetStrategies(opts *bind.TransactOpts, strategies_ []common.Address) (*types.Transaction, error) {
+// Solidity: function setStrategies((address,uint96)[] strategies_) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactor) SetStrategies(opts *bind.TransactOpts, strategies_ []ISkateAVSStrategyParams) (*types.Transaction, error) {
 	return _BindingISkateAVS.contract.Transact(opts, "setStrategies", strategies_)
 }
 
-// SetStrategies is a paid mutator transaction binding the contract method 0x9a4620b7.
+// SetStrategies is a paid mutator transaction binding the contract method 0xff5c02f2.
 //
-// Solidity: function setStrategies(address[] strategies_) returns()
-func (_BindingISkateAVS *BindingISkateAVSSession) SetStrategies(strategies_ []common.Address) (*types.Transaction, error) {
+// Solidity: function setStrategies((address,uint96)[] strategies_) returns()
+func (_BindingISkateAVS *BindingISkateAVSSession) SetStrategies(strategies_ []ISkateAVSStrategyParams) (*types.Transaction, error) {
 	return _BindingISkateAVS.Contract.SetStrategies(&_BindingISkateAVS.TransactOpts, strategies_)
 }
 
-// SetStrategies is a paid mutator transaction binding the contract method 0x9a4620b7.
+// SetStrategies is a paid mutator transaction binding the contract method 0xff5c02f2.
 //
-// Solidity: function setStrategies(address[] strategies_) returns()
-func (_BindingISkateAVS *BindingISkateAVSTransactorSession) SetStrategies(strategies_ []common.Address) (*types.Transaction, error) {
+// Solidity: function setStrategies((address,uint96)[] strategies_) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactorSession) SetStrategies(strategies_ []ISkateAVSStrategyParams) (*types.Transaction, error) {
 	return _BindingISkateAVS.Contract.SetStrategies(&_BindingISkateAVS.TransactOpts, strategies_)
 }
 
@@ -803,6 +818,27 @@ func (_BindingISkateAVS *BindingISkateAVSSession) Unpause() (*types.Transaction,
 // Solidity: function unpause() returns()
 func (_BindingISkateAVS *BindingISkateAVSTransactorSession) Unpause() (*types.Transaction, error) {
 	return _BindingISkateAVS.Contract.Unpause(&_BindingISkateAVS.TransactOpts)
+}
+
+// UpdateAVSMetadataURI is a paid mutator transaction binding the contract method 0xa98fb355.
+//
+// Solidity: function updateAVSMetadataURI(string metadataURI) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactor) UpdateAVSMetadataURI(opts *bind.TransactOpts, metadataURI string) (*types.Transaction, error) {
+	return _BindingISkateAVS.contract.Transact(opts, "updateAVSMetadataURI", metadataURI)
+}
+
+// UpdateAVSMetadataURI is a paid mutator transaction binding the contract method 0xa98fb355.
+//
+// Solidity: function updateAVSMetadataURI(string metadataURI) returns()
+func (_BindingISkateAVS *BindingISkateAVSSession) UpdateAVSMetadataURI(metadataURI string) (*types.Transaction, error) {
+	return _BindingISkateAVS.Contract.UpdateAVSMetadataURI(&_BindingISkateAVS.TransactOpts, metadataURI)
+}
+
+// UpdateAVSMetadataURI is a paid mutator transaction binding the contract method 0xa98fb355.
+//
+// Solidity: function updateAVSMetadataURI(string metadataURI) returns()
+func (_BindingISkateAVS *BindingISkateAVSTransactorSession) UpdateAVSMetadataURI(metadataURI string) (*types.Transaction, error) {
+	return _BindingISkateAVS.Contract.UpdateAVSMetadataURI(&_BindingISkateAVS.TransactOpts, metadataURI)
 }
 
 // BindingISkateAVSAllowlistDisabledIterator is returned from FilterAllowlistDisabled and is used to iterate over the raw logs and unpacked data for AllowlistDisabled events raised by the BindingISkateAVS contract.
@@ -2119,13 +2155,13 @@ func (it *BindingISkateAVSStrategiesSetIterator) Close() error {
 
 // BindingISkateAVSStrategiesSet represents a StrategiesSet event raised by the BindingISkateAVS contract.
 type BindingISkateAVSStrategiesSet struct {
-	Strategies []common.Address
+	Strategies []ISkateAVSStrategyParams
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterStrategiesSet is a free log retrieval operation binding the contract event 0x2c642a65f36b33c8cd10e6d0da9cb24f03e3a746a47adb25b1d4ab9bcdaa20aa.
+// FilterStrategiesSet is a free log retrieval operation binding the contract event 0x5022676774eb0d9d4ee6bdfda494800505636c9c64dfd32bcf32cec97c563802.
 //
-// Solidity: event StrategiesSet(address[] strategies)
+// Solidity: event StrategiesSet((address,uint96)[] strategies)
 func (_BindingISkateAVS *BindingISkateAVSFilterer) FilterStrategiesSet(opts *bind.FilterOpts) (*BindingISkateAVSStrategiesSetIterator, error) {
 
 	logs, sub, err := _BindingISkateAVS.contract.FilterLogs(opts, "StrategiesSet")
@@ -2135,9 +2171,9 @@ func (_BindingISkateAVS *BindingISkateAVSFilterer) FilterStrategiesSet(opts *bin
 	return &BindingISkateAVSStrategiesSetIterator{contract: _BindingISkateAVS.contract, event: "StrategiesSet", logs: logs, sub: sub}, nil
 }
 
-// WatchStrategiesSet is a free log subscription operation binding the contract event 0x2c642a65f36b33c8cd10e6d0da9cb24f03e3a746a47adb25b1d4ab9bcdaa20aa.
+// WatchStrategiesSet is a free log subscription operation binding the contract event 0x5022676774eb0d9d4ee6bdfda494800505636c9c64dfd32bcf32cec97c563802.
 //
-// Solidity: event StrategiesSet(address[] strategies)
+// Solidity: event StrategiesSet((address,uint96)[] strategies)
 func (_BindingISkateAVS *BindingISkateAVSFilterer) WatchStrategiesSet(opts *bind.WatchOpts, sink chan<- *BindingISkateAVSStrategiesSet) (event.Subscription, error) {
 
 	logs, sub, err := _BindingISkateAVS.contract.WatchLogs(opts, "StrategiesSet")
@@ -2172,9 +2208,9 @@ func (_BindingISkateAVS *BindingISkateAVSFilterer) WatchStrategiesSet(opts *bind
 	}), nil
 }
 
-// ParseStrategiesSet is a log parse operation binding the contract event 0x2c642a65f36b33c8cd10e6d0da9cb24f03e3a746a47adb25b1d4ab9bcdaa20aa.
+// ParseStrategiesSet is a log parse operation binding the contract event 0x5022676774eb0d9d4ee6bdfda494800505636c9c64dfd32bcf32cec97c563802.
 //
-// Solidity: event StrategiesSet(address[] strategies)
+// Solidity: event StrategiesSet((address,uint96)[] strategies)
 func (_BindingISkateAVS *BindingISkateAVSFilterer) ParseStrategiesSet(log types.Log) (*BindingISkateAVSStrategiesSet, error) {
 	event := new(BindingISkateAVSStrategiesSet)
 	if err := _BindingISkateAVS.contract.UnpackLog(event, "StrategiesSet", log); err != nil {

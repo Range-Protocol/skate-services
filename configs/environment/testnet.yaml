@@ -14,7 +14,7 @@ http_rpc: https://holesky.drpc.org
 wss_rpc: wss://holesky.drpc.org
 ## Skate
 main_chain_id: 17000 # Holesky testnet
-skate_avs: 0x2a0D46ED3D9D13F6a9b5B0D3274675143c803071
+skate_avs: 0x5D592a255A4369982aA7Fb55C6CBc12c7103e5e4
 
 ## Eigenlayer
 delegation_manager: 0xA44151489861Fe9e3055d95adC98FbD462B948e7

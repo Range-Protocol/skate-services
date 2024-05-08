@@ -70,20 +70,21 @@ func RegisterOperatorWithAVS(
 	ok, err := avsContract.CanRegister(
 		&bind.CallOpts{}, ecdsa.PubkeyToAddress(privateKey.PublicKey),
 	)
-	logger.Info("Registration eligiblity", "allowed", ok, "error", err)
+	if err != nil {
+		logger.Fatal("Registration eligiblity", "allowed", ok, "error", err)
+	}
 
 	chainId := new(big.Int).SetUint64(config.MainChainId)
 
-	// WARNING: Serialize the public key to its compressed form, DOES NOT include `0x04` prefix
-	pubKeyBytes := ecdsa.FromECDSAPub(&privateKey.PublicKey)[1:]
 
 	transactor, err := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
+	operatorAddress := ecdsa.PubkeyToAddress(privateKey.PublicKey)
 	// Dry run transaction to check for potential rejections
 	transactorNoSend := *transactor
 	transactorNoSend.NoSend = true
-	_, err = avsContract.RegisterOperator(
+	_, err = avsContract.RegisterOperatorToAVS(
 		&transactorNoSend,
-		pubKeyBytes,
+		operatorAddress,
 		operatorSigantureWithSaltAndExpiry,
 	)
 	if err != nil {
@@ -91,15 +92,15 @@ func RegisterOperatorWithAVS(
 		return err
 	}
 
-	tx, err := avsContract.RegisterOperator(
-		transactor, pubKeyBytes,
+	tx, err := avsContract.RegisterOperatorToAVS(
+		transactor, operatorAddress,
 		operatorSigantureWithSaltAndExpiry,
 	)
 	if err != nil {
 		logger.Error("Transaction failed", "error", errors.Wrap(err, "avsContract.RegisterOperator"))
 		return err
 	}
-	logger.Info("Transaction sent", "txHash", tx.Hash().Hex())
+	logger.Info("Registration request sent", "txHash", tx.Hash().Hex())
 	logger.Info("Waiting for confirmation ...")
 
 	receipt, err := backend.WaitMined(context.Background(), &be, tx)

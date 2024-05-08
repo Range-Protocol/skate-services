@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.20;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -15,24 +15,41 @@ import {IDelegationManager} from "./interfaces/IDelegationManager.sol";
 
 import {SkateAVSStorage} from "./SkateAVSStorage.sol";
 import {Errors} from "./Errors.sol";
-//import {console2} from "forge-std/Test.sol";
 
+/**
+ * @notice StakeAVS contract is an implementation of AVS by Skate chain. It allows operator to opt-in to Skate AVS.
+ * The operators can validate and sign the data that is later submitted to this contract upon reaching of quorum of
+ * 2/3 of operators.
+ */
 contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, PausableUpgradeable, SkateAVSStorage {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
+    uint256 public constant WEIGHTING_DIVISOR = 1e18;
     IAVSDirectory internal immutable _avsDirectory;
     IDelegationManager internal immutable _delegationManager;
 
+    /**
+     * @notice runs on contract deployment and initializes avs directory and delegation manager instances.
+     * @param avsDirectory_ instance of avs directory.
+     * @param delegationManager_ instance of delegation manager.
+     */
     constructor(IAVSDirectory avsDirectory_, IDelegationManager delegationManager_) {
         _avsDirectory = avsDirectory_;
         _delegationManager = delegationManager_;
         _disableInitializers();
     }
 
+    /**
+     * @notice called on contract initialization though proxy.
+     * @param owner_ address of owner.
+     * @param strategies_ list of strategies supported by avs.
+     * @param metadataURI_ url to metadata.
+     * @param allowlistEnabled_ if operator allowlist is enabled or not.
+     */
     function initialize(
         address owner_,
-        address[] calldata strategies_,
+        StrategyParams[] calldata strategies_,
         string calldata metadataURI_,
         bool allowlistEnabled_
     ) external initializer {
@@ -49,18 +66,25 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
         _transferOwnership(owner_);
     }
 
-    function registerOperator(
-        bytes calldata pubkey,
+    /**
+     * @notice registers operator on AVS.
+     * @param operator address of operator
+     * @param operatorSignature operator signature to verify the validity of operator
+     * requirements
+     * - can only be called when AVS is not paused.
+     */
+    function registerOperatorToAVS(
+        address operator,
         ISignatureUtils.SignatureWithSaltAndExpiry memory operatorSignature
     ) external override whenNotPaused {
-        address operator = msg.sender;
-        if (operator != address(uint160(uint256(keccak256(pubkey))))) revert Errors.InvalidPubKey();
+        if (operator != msg.sender) revert Errors.OnlyOperatorAllowedToCall();
         if (_allowlistEnabled && !_allowlist[operator]) revert Errors.OperatorNotAllowed();
-        if (_isOperator(operator)) revert Errors.AlreadyAnOperator();
+        if (isOperator(operator)) revert Errors.AlreadyAnOperator();
         if (_operators.length == _maxOperatorCount) revert Errors.MaxOperatorCountReached();
-        if (_getTotalDelegations(operator) < _minOperatorStake) revert Errors.MinOperatorStakeNotSatisfied();
+        if (_operatorTotalDelegations(operator) < _minOperatorStake) revert Errors.MinOperatorStakeNotSatisfied();
 
-        _addOperator(operator, pubkey);
+        _isOperator[operator] = true;
+        _operators.push(operator);
         _avsDirectory.registerOperatorToAVS(operator, operatorSignature);
 
         emit OperatorAdded(operator);
@@ -75,19 +99,21 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
         return address(_avsDirectory);
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    //                              AVS Views                                   //
-    //////////////////////////////////////////////////////////////////////////////
-
     /**
      * @notice Returns the currrent list of operator registered as OmniAVS.
      *         Operator.addr        = The operator's ethereum address
-     *         Operator.pubkey      = The operator's 64 byte uncompressed secp256k1 public key
      *         Operator.staked      = The total amount staked by the operator, not including delegations
      *         Operator.delegated   = The total amount delegated, not including operator stake
      */
-    function operators() external view override returns (Operator[] memory) {
-        return _getOperators();
+    function operators() public view override returns (Operator[] memory operators_) {
+        operators_ = new Operator[](_operators.length);
+
+        for (uint256 i = 0; i < operators_.length; i++) {
+            address operator = _operators[i];
+            uint96 total = _operatorTotalDelegations(operator);
+            uint96 staked = _getSelfDelegations(operator);
+            operators_[i] = Operator(operator, total > staked ? total - staked : 0, staked);
+        }
     }
 
     /**
@@ -113,7 +139,7 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
      * @param operator The address of the operator to get restaked strategies for
      */
     function getOperatorRestakedStrategies(address operator) external view override returns (address[] memory) {
-        if (!_isOperator(operator)) return new address[](0);
+        if (!isOperator(operator)) return new address[](0);
         return _getRestakeableStrategies();
     }
 
@@ -121,27 +147,24 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
      * @notice Check if an operator can register to the AVS.
      *         Returns true, with no reason, if the operator can register to the AVS.
      *         Returns false, with a reason, if the operator cannot register to the AVS.
-     * @dev This function is intented to be called off-chain.
+     * @dev This function is intended to be called off-chain.
      * @param operator The operator to check
      * @return canRegister True if the operator can register, false otherwise
      */
     function canRegister(address operator) external view override returns (bool) {
         if (!_delegationManager.isOperator(operator)) revert Errors.NotAnOperator();
         if (_allowlistEnabled && !_allowlist[operator]) revert Errors.OperatorNotAllowed();
-        if (_isOperator(operator)) revert Errors.AlreadyAnOperator();
+        if (isOperator(operator)) revert Errors.AlreadyAnOperator();
         if (_operators.length >= _maxOperatorCount) revert Errors.MaxOperatorCountReached();
-        if (_getTotalDelegations(operator) < _minOperatorStake) revert Errors.MinOperatorStakeNotSatisfied();
+        if (_operatorTotalDelegations(operator) < _minOperatorStake) revert Errors.MinOperatorStakeNotSatisfied();
         return true;
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    //                              Admin functions                             //
-    //////////////////////////////////////////////////////////////////////////////
-
     /**
      * @notice Sets AVS metadata URI with the AVSDirectory.
+     * @param metadataURI metadata uri to set.
      */
-    function setMetadataURI(string memory metadataURI) external override onlyOwner {
+    function updateAVSMetadataURI(string memory metadataURI) external override onlyOwner {
         _avsDirectory.updateAVSMetadataURI(metadataURI);
     }
 
@@ -149,7 +172,7 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
      * @notice sets the new stratgies.
      * @param strategies_ the list of new strategies to set
      */
-    function setStrategies(address[] calldata strategies_) external override onlyOwner {
+    function setStrategies(StrategyParams[] calldata strategies_) external override onlyOwner {
         _setStrategies(strategies_);
     }
 
@@ -206,9 +229,21 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
 
     /**
      * @notice Eject an operator from the AVS.
+     * @param operator the address of operator to eject.
      */
-    function ejectOperator(address operator) external override onlyOwner {
-        _deregisterOperator(operator);
+    function deregisterOperatorFromAVS(address operator) external override onlyOwner {
+        if (!isOperator(operator)) revert Errors.NotAnOperator();
+
+        for (uint256 i = 0; i < _operators.length; i++) {
+            if (_operators[i] == operator) {
+                _operators[i] = _operators[_operators.length - 1];
+                _operators.pop();
+                break;
+            }
+        }
+        _avsDirectory.deregisterOperatorFromAVS(operator);
+
+        emit OperatorRemoved(operator);
     }
 
     /**
@@ -226,6 +261,13 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
         _unpause();
     }
 
+    /**
+     * @notice submits data after verification from operators. It validates the passed data though signature
+     * verification. The quorum of 2/3 of operators must be reached for the successful submission.
+     * @param taskId The id of the task.
+     * @param messageData the message data validated by the operators.
+     * @param signatureTuples the list of operator signatures to be validated.
+     */
     function submitData(uint256 taskId, bytes calldata messageData, SignatureTuple[] calldata signatureTuples)
         public
         override
@@ -235,7 +277,7 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
         bool quorumSuccessful;
         for (uint256 i = 0; i < signatureTuples.length; i++) {
             SignatureTuple memory sigTuple = signatureTuples[i];
-            if (!_isOperator(sigTuple.operator)) revert Errors.NotAnOperator();
+            if (!isOperator(sigTuple.operator)) revert Errors.NotAnOperator();
 
             if (i > 0) {
                 SignatureTuple memory prevSigTuple = signatureTuples[i - 1];
@@ -247,10 +289,7 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
             sigsVerified++;
 
             // 2/3 of operators must submit the data.
-            // NOTE: future considerations
-            // 1. Weighted by operator stake amount.
-            // 2. to ensure strict BFT, should check using `(2 + amount * 2) / 3 > totalAmount`
-            if (sigsVerified * 10_000 >= _getOperators().length * 6666) {
+            if (sigsVerified * 10_000 >= operators().length * 6666) {
                 quorumSuccessful = true;
                 break;
             }
@@ -260,6 +299,12 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
         emit DataSubmitted(taskId, messageData);
     }
 
+    /**
+     * @notice submits data in batch and verify it. Internally calls {submitData} function.
+     * @param taskIds the list of task ids.
+     * @param messageDatas the list of message datas.
+     * @param signaturesTuples the list of signature tuples by operators.
+     */
     function batchSubmitData(
         uint256[] calldata taskIds,
         bytes[] calldata messageDatas,
@@ -268,45 +313,6 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
         for (uint256 i = 0; i < taskIds.length; i++) {
             submitData(taskIds[i], messageDatas[i], signaturesTuples[i]);
         }
-    }
-
-    /**
-     * @notice Deregister an operator from the AVS. Forwards a call to EigenLayer's AVSDirectory.
-     */
-    function _deregisterOperator(address operator) private {
-        if (!_isOperator(operator)) revert Errors.NotAnOperator();
-
-        _removeOperator(operator);
-        _avsDirectory.deregisterOperatorFromAVS(operator);
-
-        emit OperatorRemoved(operator);
-    }
-
-    /**
-     * @notice Add an operator to internal AVS state (_operators, _operatorPubkeys)
-     * @dev Does not check if operator already exists
-     */
-    function _addOperator(address operator, bytes calldata pubkey) private {
-        _operators.push(operator);
-        _operatorPubkeys[operator] = pubkey;
-    }
-
-    /**
-     * @notice Removes an operator from internal AVS state (_operators, _operatorPubkeys)
-     * @dev Does not check if operator exists
-     */
-    function _removeOperator(address operator) private {
-        for (uint256 i = 0; i < _operators.length;) {
-            if (_operators[i] == operator) {
-                _operators[i] = _operators[_operators.length - 1];
-                _operators.pop();
-                break;
-            }
-            unchecked {
-                i++;
-            }
-        }
-        delete _operatorPubkeys[operator];
     }
 
     /**
@@ -349,24 +355,17 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
      * @notice sets the new strategies.
      * @param strategies_ the new strategies
      */
-    function _setStrategies(address[] calldata strategies_) private {
+    function _setStrategies(StrategyParams[] calldata strategies_) private {
         delete _strategies;
 
-        for (uint256 i = 0; i < strategies_.length;) {
-            if (strategies_[i] == address(0x0)) revert Errors.ZeroStrategyAddress();
+        for (uint256 i = 0; i < strategies_.length; i++) {
+            if (address(strategies_[i].strategy) == address(0x0)) revert Errors.ZeroStrategyAddress();
 
             // ensure no duplicates
-            for (uint256 j = i + 1; j < strategies_.length;) {
-                if (strategies_[i] == address(strategies_[j])) revert Errors.StrategyAlreadyAdded();
-                unchecked {
-                    j++;
-                }
+            for (uint256 j = i + 1; j < strategies_.length; j++) {
+                if (strategies_[i].strategy == strategies_[j].strategy) revert Errors.StrategyAlreadyAdded();
             }
-
-            _strategies.push(IStrategy(strategies_[i]));
-            unchecked {
-                i++;
-            }
+            _strategies.push(strategies_[i]);
         }
 
         emit StrategiesSet(strategies_);
@@ -377,102 +376,53 @@ contract SkateAVS is Initializable, UUPSUpgradeable, OwnableUpgradeable, Pausabl
     //////////////////////////////////////////////////////////////////////////////
 
     /**
-     * @notice Returns true if the operator is in the list of operators
-     */
-    function _isOperator(address operator) private view returns (bool) {
-        return _operatorPubkeys[operator].length > 0;
-    }
-
-    /**
-     * @notice Return current list of Operators, including their personal stake and delegated stake
-     */
-    function _getOperators() internal view returns (Operator[] memory) {
-        Operator[] memory ops = new Operator[](_operators.length);
-
-        for (uint256 i = 0; i < ops.length;) {
-            address operator = _operators[i];
-
-            uint96 total = _getTotalDelegations(operator);
-            uint96 staked = _getSelfDelegations(operator);
-
-            // this should never happen, but just in case
-            uint96 delegated = total > staked ? total - staked : 0;
-            bytes memory pubkey = _operatorPubkeys[operator];
-
-            ops[i] = Operator(operator, pubkey, delegated, staked);
-            unchecked {
-                i++;
-            }
-        }
-
-        return ops;
-    }
-
-    /**
      * @notice Returns the operator's self-delegations
      * @param operator The operator address
      */
-    function _getSelfDelegations(address operator) internal view returns (uint96) {
-        (IStrategy[] memory strategies_, uint256[] memory shares) = _delegationManager.getDelegatableShares(operator);
+    function _getSelfDelegations(address operator) internal view returns (uint96 staked) {
+        (IStrategy[] memory strategiesByOperator, uint256[] memory shares) =
+            _delegationManager.getDelegatableShares(operator);
 
-        uint96 staked;
-        for (uint256 i = 0; i < strategies_.length; i++) {
-            IStrategy strategyToCheck = strategies_[i];
-
+        for (uint256 i = 0; i < strategiesByOperator.length; i++) {
             // find the strategy params for the strategy
-            IStrategy strategy;
-            for (uint256 j = 0; j < _strategies.length;) {
-                if (address(_strategies[j]) == address(strategyToCheck)) {
-                    strategy = _strategies[j];
+            StrategyParams memory params;
+            for (uint256 j = 0; j < _strategies.length; j++) {
+                if (_strategies[j].strategy == strategiesByOperator[i]) {
+                    params = _strategies[j];
                     break;
-                }
-                unchecked {
-                    j++;
                 }
             }
 
             // if strategy is not found, do not consider it in stake
-            if (address(strategy) == address(0)) continue;
+            if (address(params.strategy) == address(0)) continue;
 
-            staked += uint96(shares[i]);
+            staked += uint96(shares[i] * params.multiplier / WEIGHTING_DIVISOR);
         }
-
-        return staked;
     }
 
     /**
      * @notice Returns total delegations to the operator, including self delegations
      * @param operator The operator address
      */
-    function _getTotalDelegations(address operator) internal view returns (uint96) {
-        uint96 total;
-        IStrategy strategy;
-
-        for (uint256 i = 0; i < _strategies.length;) {
-            strategy = _strategies[i];
-            uint256 shares = _delegationManager.operatorShares(operator, strategy);
-            total += uint96(shares);
-            unchecked {
-                i++;
-            }
+    function _operatorTotalDelegations(address operator) internal view returns (uint96 delegation) {
+        for (uint256 i = 0; i < _strategies.length; i++) {
+            uint256 shares = _delegationManager.operatorShares(operator, _strategies[i].strategy);
+            delegation += uint96(shares * _strategies[i].multiplier / WEIGHTING_DIVISOR);
         }
-
-        return total;
     }
 
     /**
      * @notice Returns the list of restakeable strategy addresses
      */
-    function _getRestakeableStrategies() internal view returns (address[] memory) {
-        address[] memory strategies_ = new address[](_strategies.length);
-        for (uint256 i = 0; i < _strategies.length;) {
-            strategies_[i] = address(_strategies[i]);
-            unchecked {
-                i++;
-            }
+    function _getRestakeableStrategies() internal view returns (address[] memory strategies_) {
+        strategies_ = new address[](_strategies.length);
+        for (uint256 i = 0; i < _strategies.length; i++) {
+            strategies_[i] = address(_strategies[i].strategy);
         }
-        return strategies_;
     }
 
+    /**
+     * @notice called by the UUPS function to validate the msg.sender when upgrading the AVS contract's implementation.
+     */
     function _authorizeUpgrade(address) internal override onlyOwner {}
 }

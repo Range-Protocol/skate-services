@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity =0.8.20;
 
 import {IDelegationManager as IDM} from "eigenlayer-contracts/src/contracts/interfaces/IDelegationManager.sol";
