@@ -29,7 +29,7 @@ Accounts are stored in an encrypted format using [geth keystore system](https://
 To run, start with:
 
 ```bash
-go run kms/main.go -p [passphrase] -k [account_private_key]
+go run kms/main.go store -p [passphrase] -k [account_private_key]
 ```
 
 Key information will be dumped in `./keystore` folders and used for subsequent services. To load a signer to be used with respective services, 
